@@ -2,10 +2,13 @@
  Python Project Template
 =========================
 
-.. image:: https://travis-ci.org/seanfisk/python-project-template.png
-   :target: https://travis-ci.org/seanfisk/python-project-template
+.. image:: https://travis-ci.org/Patechoc/python-project-template.svg?branch=master
+    :target: https://travis-ci.org/Patechoc/python-project-template
 
-This project provides a best-practices template Python project which integrates several different tools. It saves you work by setting up a number of things, including documentation, code checking, and unit test runners.
+.. image:: https://app.wercker.com/status/97c7356879eba1eb03d1e666ded113a2/m
+   :target: https://app.wercker.com/project/bykey/97c7356879eba1eb03d1e666ded113a2
+
+This project is forked from `Sean Fisk`_ and tuned to my current needs in Python. It provides a best-practices template Python project which integrates several different tools. It saves you work by setting up a number of things, including documentation, code checking, and unit test runners.
 
 As it is an all-in-one solution, the tools used are rather opinionated. They include:
 
@@ -29,7 +32,7 @@ If you are new to Python or new to creating Python projects, see Kenneth Reitz's
 .. _mock: http://www.voidspace.org.uk/python/mock/
 .. _tox: http://testrun.org/tox/latest/
 .. _Hitchhiker's Guide to Python: http://docs.python-guide.org/en/latest/
-
+.. _Sean Fisk: https://github.com/seanfisk/python-project-template
 Project Setup
 =============
 
@@ -40,7 +43,7 @@ Instructions
 
 #. Clone the template project, replacing ``my-project`` with the name of the project you are creating::
 
-        git clone https://github.com/seanfisk/python-project-template.git my-project
+        git clone https://github.com/Patechoc/python-project-template.git my-project
         cd my-project
 
 #. Edit the metadata file ``my_module/metadata.py`` to correctly describe your project.
@@ -90,24 +93,21 @@ Instructions
 
 #. Run the tests::
 
-        paver test_all
+        paver test
 
    You should see output similar to this::
 
-       $ paver test_all
-       ---> pavement.test_all
-       No style errors
-       ========================================= test session starts =========================================
-       platform darwin -- Python 2.7.3 -- pytest-2.3.4
-       collected 5 items
+       $ paver test
+       ---> pavement.test
+       ========================================================================================= test session starts ==========================================================================================
+       platform linux2 -- Python 2.7.6 -- py-1.4.26 -- pytest-2.7.0
+       rootdir: /home/ctcc2/Downloads/testGitlabPython, inifile: 
+       plugins: cov
+       collected 4 items 
 
-       tests/test_main.py .....
+       tests/test_main.py ....
 
-       ====================================== 5 passed in 0.05 seconds =======================================
-         ___  _   ___ ___ ___ ___
-        | _ \/_\ / __/ __| __|   \
-        |  _/ _ \\__ \__ \ _|| |) |
-        |_|/_/ \_\___/___/___|___/
+       ======================================================================================= 4 passed in 0.02 seconds =======================================================================================
 
    The substitution performed is rather naive, so some style errors may be reported if the description or name cause lines to be too long. Correct these manually before moving to the next step. If any unit tests fail to pass, please report an issue.
 
@@ -134,7 +134,7 @@ The ``pavement.py`` file comes with a number of tasks already set up for you. Yo
     commit           - Commit only if all the tests pass.
     test_all         - Perform a style check and run all unit tests.
 
-For example, to run the both the unit tests and lint, run the following in the project root directory::
+For example, to run both the unit tests and lint, run the following in the project root directory::
 
     paver test_all
 
@@ -230,8 +230,19 @@ This will copy the template directory to a temporary directory, run the generati
 
 This command line would just test Python 2.7.
 
+
+Links
+=======
+
+* `Starting a Django 1.6 Project the Right Way`_ 
+* `Open Sourcing a Python Project the Right Way`_
+
+.. _`Starting a Django 1.6 Project the Right Way`: http://www.jeffknupp.com/blog/2013/12/18/starting-a-django-16-project-the-right-way/
+.. _`Open Sourcing a Python Project the Right Way`: http://www.jeffknupp.com/blog/2013/08/16/open-sourcing-a-python-project-the-right-way/
+
 Authors
 =======
 
 * Sean Fisk
 * Benjamin Schwarze
+* Patrick Merlot
