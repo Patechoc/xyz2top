@@ -2,11 +2,8 @@
  Python Project Template
 =========================
 
-.. image:: https://travis-ci.org/Patechoc/python-project-template.svg?branch=master
-    :target: https://travis-ci.org/Patechoc/python-project-template
-
-.. image:: https://app.wercker.com/status/97c7356879eba1eb03d1e666ded113a2/m
-   :target: https://app.wercker.com/project/bykey/97c7356879eba1eb03d1e666ded113a2
+.. image:: https://app.wercker.com/status/9500acdbf880d1c747821103c98c3a81/m
+   :target: https://app.wercker.com/project/bykey/9500acdbf880d1c747821103c98c3a81
 
 This project is forked from `Sean Fisk`_ and tuned to my current needs in Python. It provides a best-practices template Python project which integrates several different tools. It saves you work by setting up a number of things, including documentation, code checking, and unit test runners.
 
