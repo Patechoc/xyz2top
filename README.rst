@@ -40,7 +40,7 @@ Instructions
 
 #. Clone the template project, replacing ``my-project`` with the name of the project you are creating::
 
-        git clone https://github.com/Patechoc/python-project-template.git my-project
+        git clone git@bitbucket.org:patrick_merlot/python-project-template.git  my-project
         cd my-project
 
 #. Edit the metadata file ``my_module/metadata.py`` to correctly describe your project.
