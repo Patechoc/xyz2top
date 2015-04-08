@@ -23,14 +23,6 @@ build:
     # A custom script step, name value is used in the UI
     # and the code value contains the command that get executed
     - script:
-        name: setting up PYTHONPATH
-        code: |
-          echo "pip version $(pip --version) running"
-          PATH=$(pwd)
-          export PYTHONPATH=$PYTHONPATH:${PATH}/src
-          echo "PYTHONPATH: $PYTHONPATH"
-
-    - script:
         name: unit tests
         code: |
           py.test
