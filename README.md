@@ -38,7 +38,7 @@ sudo easy_install pip
 virtualenv myPackage
 source myPackage/bin/activate
 sudo ./myPackage/bin/pip install -r requirements-dev.txt
-cd test; python -m unittest discover -v  ## optional but quick ;)
+cd tests; py.test
 deactivate
 ```
 
@@ -46,8 +46,15 @@ deactivate
 ## Testing
 
 ```
-cd test
-python -m unittest discover -v
+cd tests
+py.test -q test_main.py  # to run a single test file
+```
+
+or simply the following command for the full test suite:
+
+```
+cd tests
+py.test 
 ```
 
 

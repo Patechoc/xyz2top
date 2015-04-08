@@ -5,17 +5,10 @@ import os
 import sys
 import imp
 import subprocess
-
+import convertREADME
 
 ## creating a temporary reStructeredTxt version of README for setup.py to read in
-try:
-   import pypandoc
-   description_rst = pypandoc.convert('README.md', 'rst')
-   with open('README.rst', 'a') as f:
-      f.write(description_rst)
-except (IOError, ImportError):
-   description_rst = open('README.md').read()
-
+convertREADME.convert_md2rst()
 
 
 ## Python 2.6 subprocess.check_output compatibility. Thanks Greg Hewgill!
