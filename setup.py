@@ -6,6 +6,18 @@ import sys
 import imp
 import subprocess
 
+
+## creating a temporary reStructeredTxt version of README for setup.py to read in
+try:
+   import pypandoc
+   description_rst = pypandoc.convert('README.md', 'rst')
+   with open('README.rst', 'a') as f:
+      f.write(description_rst)
+except (IOError, ImportError):
+   description_rst = open('README.md').read()
+
+
+
 ## Python 2.6 subprocess.check_output compatibility. Thanks Greg Hewgill!
 if 'check_output' not in dir(subprocess):
     def check_output(cmd_args, *args, **kwargs):
@@ -222,6 +234,7 @@ if sys.version_info < (2, 7) or (3, 0) <= sys.version_info < (3, 3):
     python_version_specific_requires.append('argparse')
 
 
+
 # See here for more options:
 # <http://pythonhosted.org/setuptools/setuptools.html>
 setup_dict = dict(
@@ -233,7 +246,7 @@ setup_dict = dict(
     maintainer_email=metadata.emails[0],
     url=metadata.url,
     description=metadata.description,
-    long_description=read('README.rst'),
+    long_description=description_rst #read('README.rst'),
     # Find a list of classifiers here:
     # <http://pypi.python.org/pypi?%3Aaction=list_classifiers>
     classifiers=[

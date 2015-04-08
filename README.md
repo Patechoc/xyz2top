@@ -9,7 +9,7 @@ This module provides generates genuine topology files from a molecular geometry 
 We will try to summarize here the decisions that leads to our final topology file:
 
 - This module only attemps to identify covalent bonds
-- covalent bonds are detected as such when the distance between 2 atoms is simply smaller or equal to the sum of their repective [covalent radii](http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius). The sum of covalent radii can be optionnally multiplied by a coefficient (by default equal to 1) before being compared to the actual distance of the pair of atoms (e.g. if the coefficient is greater than 1., potentially more pair of atoms will be detected as covalent bonds).  
+- covalent bonds are detected as such as when the distance between 2 atoms is simply smaller or equal to the sum of their respective [covalent radius](http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius). The sum of the covalent radii can be optionnally multiplied by a coefficient (by default equal to 1) before being compared to the actual distance of the pair of atoms (e.g. if the coefficient is greater than 1., potentially more pairs of atoms will be detected as being connected by a covalent bond).  
 
 
 ## Table of contents
