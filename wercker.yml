@@ -23,6 +23,6 @@ build:
     # A custom script step, name value is used in the UI
     # and the code value contains the command that get executed
     - script:
-        name: unit tests
+        name: echo nothing
         code: |
-          py.test
+          echo "nothing"
