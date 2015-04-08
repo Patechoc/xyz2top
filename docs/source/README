@@ -1,0 +1,5 @@
+Run `sphinx-apidoc -o . ../../xyz2top' in this directory.
+
+This will generate `modules.rst' and `xyz2top.rst'.
+
+Then include `modules.rst' in your `index.rst' file.
