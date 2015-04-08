@@ -31,12 +31,6 @@ build:
           echo "PYTHONPATH: $PYTHONPATH"
 
     - script:
-        name: echo python information
-        code: |
-          echo "python version $(python --version) running"
-          echo "pip version $(pip --version) running"
-
-    - script:
         name: unit tests
         code: |
           py.test
