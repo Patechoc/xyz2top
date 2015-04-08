@@ -1,26 +1,25 @@
-=========================
- xyz2top Python Module
-=========================
+# xyz2top Python Module
 
 <!---
 Wercker badge
 -->
 
-This module provides builds some kind of topology from a molecular geometry provided in [XYZ format](http://en.wikipedia.org/wiki/XYZ_file_format). Building such a file requires some specific and arbitrary definition of what a molecular bond is and how it is detected.
+This module provides generates genuine topology files from a molecular geometry provided in [XYZ format](http://en.wikipedia.org/wiki/XYZ_file_format). Building such a file requires some specific and arbitrary definition of what a molecular bond is and how it is detected.
 
 We will try to summarize here the decisions that leads to our final topology file:
-- criteria #1
-- criteria #2
-- criteria #3
 
+- This module only attemps to identify covalent bonds
+- covalent bonds are detected as such when the distance between 2 atoms is simply smaller or equal to the sum of their repective [covalent radii](http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius). The sum of covalent radii can be optionnally multiplied by a coefficient (by default equal to 1) before being compared to the actual distance of the pair of atoms (e.g. if the coefficient is greater than 1., potentially more pair of atoms will be detected as covalent bonds).  
 
 
 ## Table of contents
 
 - [Quick start](#quick-start)
 - [Testing](#testing)
+- [Dependencies](#dependencies)
 - [License](#license)
 - [Issues](#issues)
+
 
 ## Quick start
 
@@ -51,6 +50,10 @@ cd test
 python -m unittest discover -v
 ```
 
+
+## Dependencies
+
+- elements.py is an external module containing information of the periodic table, among which some experimental covalent radii to atoms used for identifying covalent bond according to our simple model of such bonds.
 
 ## License
 
