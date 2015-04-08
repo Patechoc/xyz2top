@@ -37,7 +37,7 @@ cd xyz2top
 sudo easy_install pip
 virtualenv myPackage
 source myPackage/bin/activate
-sudo ./myPackage/bin/pip install -r requirements.txt
+sudo ./myPackage/bin/pip install -r requirements-dev.txt
 cd test; python -m unittest discover -v  ## optional but quick ;)
 deactivate
 ```
