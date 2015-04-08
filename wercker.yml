@@ -29,12 +29,12 @@ build:
     #       PATH=$(pwd)
     #       export PYTHONPATH=$PYTHONPATH:${PATH}/src
     #       echo "PYTHONPATH: $PYTHONPATH"
-    - script:
-        name: echo python information
-        code: |
-          echo "python version $(python --version) running"
-          echo "pip version $(pip --version) running"
-    - script:
-        name: unit tests
-        code: |
-          py.test
+    # - script:
+    #     name: echo python information
+    #     code: |
+    #       echo "python version $(python --version) running"
+    #       echo "pip version $(pip --version) running"
+    # - script:
+    #     name: unit tests
+    #     code: |
+    #       py.test
