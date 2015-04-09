@@ -9,11 +9,11 @@ import convertREADME
 
 ## creating a temporary reStructeredTxt version of README for setup.py to read in
 description_rst = ''
-if os.path.isfile('README.md') and not (os.path.isfile('README.rst'))
-   description_rst = convertREADME.convert_md2rst('README.md','README.rst')
-elif os.path.isfile('README.rst') and not (os.path.isfile('README.md'))
-   convertREADME.convert_rst2md('README.rst','README.md')
-   description_rst = open('README.rst').read()
+if os.path.isfile('README.md') and not (os.path.isfile('README.rst')):
+    description_rst = convertREADME.convert_md2rst('README.md','README.rst')
+elif os.path.isfile('README.rst') and not (os.path.isfile('README.md')):
+    convertREADME.convert_rst2md('README.rst','README.md')
+    description_rst = open('README.rst').read()
 
 ## Python 2.6 subprocess.check_output compatibility. Thanks Greg Hewgill!
 if 'check_output' not in dir(subprocess):

@@ -27,11 +27,9 @@ build:
         code: |
           xyzPATH=$(pwd)
           echo "xyzPATH: $xyzPATH"
-          export PYTHONPATH=$PYTHONPATH:$xyzPATH
+          export PYTHONPATH=$xyzPATH
           echo "PYTHONPATH: $PYTHONPATH"
           export PYTHONPATH=$PYTHONPATH:${xyzPATH}/src
-          export PYTHONPATH=$PYTHONPATH:${xyzPATH}/plots
-          export PYTHONPATH=$PYTHONPATH:${xyzPATH}/tables
           echo "PYTHONPATH: $PYTHONPATH"
 
     - script:
@@ -40,4 +38,4 @@ build:
           echo "python version $(python --version) running"
           echo "pip version $(pip --version) running"
           echo "PyTest version $(py.test --version) running"
-          python -m pytest
+          python -m pytest tests/
