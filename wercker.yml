@@ -22,19 +22,23 @@ build:
 
     # A custom script step, name value is used in the UI
     # and the code value contains the command that get executed
-    # - script:
-    #     name: setting up PYTHONPATH
-    #     code: |
-    #       echo "pip version $(pip --version) running"
-    #       PATH=$(pwd)
-    #       export PYTHONPATH=$PYTHONPATH:${PATH}/src
-    #       echo "PYTHONPATH: $PYTHONPATH"
     - script:
-        name: echo python information
+        name: define environment variables
+        code: |
+          xyzPATH=$(pwd)
+          echo "xyzPATH: $xyzPATH"
+          export PYTHONPATH=$PYTHONPATH:$xyzPATH
+          echo "PYTHONPATH: $PYTHONPATH"
+          export PYTHONPATH=$PYTHONPATH:${xyzPATH}/src
+          export PYTHONPATH=$PYTHONPATH:${xyzPATH}/plots
+          export PYTHONPATH=$PYTHONPATH:${xyzPATH}/tables
+          echo "PYTHONPATH: $PYTHONPATH"
+
+    - script:
+        name: python unit test with PyTest
         code: |
           echo "python version $(python --version) running"
           echo "pip version $(pip --version) running"
-    - script:
-        name: unit tests
-        code: |
-          py.test
+          echo "PyTest version $(py.test --version) running"
+          cd test
+          python -m pytest
