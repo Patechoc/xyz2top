@@ -1,2 +1,6 @@
+--index-url https://pypi.python.org/simple/
+
+-e .
+
 # Python 2.6 compatibility
 # argparse==1.2.1
