@@ -35,6 +35,7 @@ build:
     - script:
         name: python unit test with PyTest
         code: |
+          pip install pytest
           echo "python version $(python --version) running"
           echo "pip version $(pip --version) running"
           echo "PyTest version $(py.test --version) running"
