@@ -57,8 +57,21 @@ dependencies that were tested last for passing the tests:
     sudo easy_install pip
     virtualenv myPackage
     source myPackage/bin/activate
+    sudo python setup.py install
+    py.test tests/
+    deactivate
+
+or installing the development version:
+
+::
+
+    git clone https://github.com/Patechoc/xyz2top.git
+    cd xyz2top
+    sudo easy_install pip
+    virtualenv myPackage
+    source myPackage/bin/activate
     sudo ./myPackage/bin/pip install -r requirements-dev.txt
-    cd tests; py.test
+    py.test tests/
     deactivate
 
 Testing
@@ -67,14 +80,14 @@ Testing
 ::
 
     cd tests
-    py.test -q test_main.py  # to run a single test file
+    py.test 
 
-or simply the following command for the full test suite:
+or some specific test module:
 
 ::
 
     cd tests
-    py.test 
+    py.test -q test_main.py  # to run a single test file
 
 Dependencies
 ------------
