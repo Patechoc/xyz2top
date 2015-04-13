@@ -15,14 +15,8 @@ class read_xyz_format(unittest.TestCase):
         stringDATA = ""
         with open(self.path_to_file1, 'r') as f:
             stringDATA = f.read()
-            print "-----------------------------------------"
-            print "toto:\n"
-            print stringDATA
-            print "-----------------------------------------"
-        print "-----------------------------------------"
-        print "tata:\n"
-        print str1
-        print "-----------------------------------------"
         self.assertEqual(str1.strip(), stringDATA.strip())
+
+
 if __name__ == '__main__':
     unittest.main()
