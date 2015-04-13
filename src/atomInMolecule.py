@@ -19,7 +19,7 @@ class atomInfos(object):
     def __init__(self, atomSymbol="", atomCharge=None):
         self.bohr_in_angstrom = 0.52917721092   #0.5291772083
         self.atomSymbol = atomSymbol
-        if atomCharge is None: 
+        if atomCharge is None:
             self.atomCharge = float(Atomic_NUMBERS[atomSymbol.strip()])
         else:
             self.atomCharge = float(atomCharge)
@@ -81,7 +81,7 @@ class groupSameAtoms(atomInfos):
         s = ''
         s += 'Charge={0} Atoms={1:d}\n'.format(self.atomCharge, self.nbAtomsInGroup)
         for a in self.listAtomsCoord:
-            s += a.getContent_atomCoord()
+            s += a.get_content_atomCoord()
         return s
     def print_DALTON_groupSameAtoms(self):
         print '{0}'.format(self.getContent_DALTON_groupSameAtoms())
@@ -125,7 +125,7 @@ class molecule(object):
                    + "molecular charge: " + str(self.charge)+"\n" \
                    + "distances in: " + self.unitDistance+"\n" \
                    + "comments: " + self.comments+"\n"
-        strMol = strMol + "".join(['   {0}\n'.format(atom.getContent_atomCoord()) for atom in self.listAtoms])
+        strMol = strMol + "".join(['{0}\n'.format(atom.get_content_atomCoord()) for atom in self.listAtoms])
         return strMol
 
     def getContent_format_XYZ(self):

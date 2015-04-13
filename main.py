@@ -3,7 +3,7 @@
 import sys, os, re
 import argparse
 import imp
-topology = imp.load_source("topo", "./src/topology.py")
+import topology
 
 def main():
     topology.main()

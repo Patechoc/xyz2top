@@ -23,26 +23,26 @@ def read_arguments():
 
 
 
-    def main():
+def main():
     # read inputs
     args = read_arguments()
     path_to_file = os.path.abspath(args.filename)
+    covRadFactor = 1.
     if (args.covRadFactor == None):
-        covRadFactor = 1.
         print "no factor for bond distance specified \
-        > default covalent radius factor"
+        > default covalent radius factor = {}\
+        ".format(covRadFactor)
     else:
         covRadFactor = args.covRadFactor
-    print "Covalent radius factor set to ",covRadFactor
-    if args.verbose:
-        print "Approximate the molecular topology stored in {} \n  \
-        with connections detected as covalent bonds if pair-atomic \
-        distance goes below {} times the sum of the covalent radii.\
-        ".format(args.filename, args.covRadFactor)
-
-
+        print "Covalent radius factor set to ",covRadFactor
+        if args.verbose:
+            print "Approximate the molecular topology stored in {} \n  \
+            with connections detected as covalent bonds if pair-atomic \
+            distance goes below {} times the sum of the covalent radii.\
+            ".format(args.filename, args.covRadFactor)
     # parse_molecule_XYZ()
     molecule = xyz.parse_XYZ(path_to_file)
+    print molecule
 
     # get_atoms()
     # build_matrix_distance()

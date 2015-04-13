@@ -3,7 +3,7 @@
 import sys, os
 import numpy as np
 import parser as prs
-import molecule as mol
+import atomInMolecule as mol
 
 
 
@@ -12,7 +12,7 @@ def parse_XYZ(path_to_file):
     with open(path_to_file, 'r') as f:
         stringXYZ = f.read()
 
-    ### PyParsing grammar 
+    ### PyParsing grammar
     coordinate = prs.Combine(prs.Optional(prs.Literal("-")) + prs.integer+prs.Optional(prs.Literal(".") + prs.integer))
     oneAtomCoordinates = (prs.element).setResultsName("atomAbrev") + coordinate.setResultsName("xCoord") + coordinate.setResultsName("yCoord") + coordinate.setResultsName("zCoord")
     get_infos = prs.LineStart() + (prs.integer).setResultsName("nbAtomsTotal") + prs.EOL + prs.StrangeName.setResultsName("comments")
