@@ -2,7 +2,6 @@
 
 import unittest
 import xyz
-import numpy as np
 
 # http://docs.python-guide.org/en/latest/writing/tests/
 # http://stackoverflow.com/questions/1896918/running-unittest-with-typical-test-directory-structure

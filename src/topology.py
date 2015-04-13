@@ -22,6 +22,11 @@ def read_arguments():
     return args
 
 
+class topology(object):
+    def __init__(self, molecule):
+        self.distanceMatrix = []
+
+
 
 def main():
     # read inputs
