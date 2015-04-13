@@ -26,9 +26,8 @@ build:
         name: define environment variables
         code: |
           xyzPATH=$(pwd)
-          echo "xyzPATH: $xyzPATH"
+          echo "Initiating Python path to: $xyzPATH"
           export PYTHONPATH=$xyzPATH
-          echo "PYTHONPATH: $PYTHONPATH"
           export PYTHONPATH=$PYTHONPATH:${xyzPATH}/src
           echo "PYTHONPATH: $PYTHONPATH"
 
