@@ -18,8 +18,7 @@ class atomEntity(object):
     def __str__(self):
         str = "ATOM ENTITY: index={}, infos= {}".format(self.atomIndex,self.atomObject)
         if len(self.indicesNeighbours) > 0:
-            #str += ", #neighbours= {} ({})".format(len(self.indicesNeighbours),",".join([val for val in self.indicesNeighbours]))
-            str += ", #neighbours= {} ()".format(len(self.indicesNeighbours))
+            str += ", #neighbours= {} ({})".format(len(self.indicesNeighbours),self.indicesNeighbours)
         else:
             str += ", #neighbours= 0"
         return str
