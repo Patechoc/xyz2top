@@ -110,12 +110,10 @@ def main():
     # read inputs
     args = read_arguments()
     path_to_file = os.path.abspath(args.filename)
-    covRadFactor = 1.
     if (args.covRadFactor == None):
-        print "no factor for bond distance specified \n\t> default covalent radius factor = {}".format(covRadFactor)
+        print "no factor for bond distance specified >> default covalent radius factor will apply."
     else:
-        covRadFactor = args.covRadFactor
-        print "Covalent radius factor set to ",covRadFactor
+        print "Covalent radius factor set to ", args.covRadFactor
         if args.verbose:
             print "Approximate the molecular topology stored in {} \n  \
             with connections detected as covalent bonds if pair-atomic \
@@ -126,7 +124,10 @@ def main():
     #print molecule
 
     # build_matrix_distance()
-    molecular_topology = topology(molecule, covRadFactor)
+    if (args.covRadFactor != None):
+        molecular_topology = topology(molecule, args.covRadFactor)
+    else:
+        molecular_topology = topology(molecule)
     molecular_topology.build_topology()
 
     # detect_covalent_bonds() # build unique connected pairs and add connectedAtoms to each atom 
