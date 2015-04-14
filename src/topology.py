@@ -111,7 +111,8 @@ def main():
     args = read_arguments()
     path_to_file = os.path.abspath(args.filename)
     if (args.covRadFactor == None):
-        print "no factor for bond distance specified >> default covalent radius factor will apply."
+        print "no factor for bond distance specified\n\t\
+        >> default covalent radius factor will apply.\nRun './main.py --help' for more options."
     else:
         print "Covalent radius factor set to ", args.covRadFactor
         if args.verbose:
