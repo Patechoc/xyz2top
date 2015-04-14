@@ -35,7 +35,7 @@ class atomPair(object):
 
 
 class topology(object):
-    def __init__(self, molecule, covRadFactor=1.):
+    def __init__(self, molecule, covRadFactor=1.3):
         self.molecule = molecule
         # inter-atomic distance as an upper triangular matrix of atom-pairs
         self.distanceMatrix = None
