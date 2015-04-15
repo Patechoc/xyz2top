@@ -33,12 +33,6 @@ class atomPair(object):
         # COVALENT BOND DISTANCE
         # http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius
         self.covDist = self.sum_covalent_radii()
-    def sum_covalent_radii(self):
-        ele_ai = elements.ELEMENTS[self.atomEntity_i.atomObject.atomSymbol]
-        ele_aj = elements.ELEMENTS[self.atomEntity_j.atomObject.atomSymbol]
-        covRad_ai = ele_ai.covrad
-        covRad_aj = ele_aj.covrad
-        return covRad_ai + covRad_aj
     def __str__(self):
         return "ATOM PAIR between:\n\
         \t {}\n\
@@ -47,6 +41,12 @@ class atomPair(object):
         \t Interatomic distance : {}\
         ".format(self.atomEntity_i,  self.atomEntity_j,
                  self.covDist, self.distance)
+    def sum_covalent_radii(self):
+        ele_ai = elements.ELEMENTS[self.atomEntity_i.atomObject.atomSymbol]
+        ele_aj = elements.ELEMENTS[self.atomEntity_j.atomObject.atomSymbol]
+        covRad_ai = ele_ai.covrad
+        covRad_aj = ele_aj.covrad
+        return covRad_ai + covRad_aj
 
 
 class topology(object):
@@ -59,6 +59,16 @@ class topology(object):
         self.atomicPairs = [] # contains all atomPairs
         self.connections = [] # contains only atomPairs detected as connected
         self.atomNeighbours = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
+    def __str__(self):
+        return "TOPOLOGY:\
+        \n\tmolecule: {} ({} atoms)\
+        \n\tCovalent radius factor: {}\
+        \n\tTotal nb. of possible atomic pairs : {}\
+        \n\tTotal nb. of pairs detected as bonds: {}\
+        ".format(self.molecule.shortname, self.molecule.nbAtomsInMolecule,
+                 self.covRadFactor, len(self.atomicPairs),
+                 len(self.connections))
+
     def is_connected(self, pair):
         isConnected = False
         if ( get_atomic_separation(pair.atomEntity_i.atomObject,
@@ -78,7 +88,7 @@ class topology(object):
             self.connections.append(pair)
             self.atomNeighbours[i].add_neighbourAtom(entity_j)
             self.atomNeighbours[j].add_neighbourAtom(entity_i)
-            print atomPair(self.atomNeighbours[i], self.atomNeighbours[j])
+            #print atomPair(self.atomNeighbours[i], self.atomNeighbours[j])
         #print pair
 
     def get_atomicConnections(self):
@@ -131,8 +141,7 @@ def main():
     args = read_arguments()
     path_to_file = os.path.abspath(args.filename)
     if (args.covRadFactor == None):
-        print "no factor for bond distance specified\n\t\
-        >> default covalent radius factor will apply.\nRun './main.py --help' for more options."
+        print "no factor for bond distance specified\n>> default covalent radius factor will apply.\n(Run './main.py --help' for more options.)"
     else:
         print "Covalent radius factor set to ", args.covRadFactor
         if args.verbose:
@@ -150,7 +159,7 @@ def main():
     else:
         molecular_topology = topology(molecule)
     molecular_topology.build_topology()
-
+    print molecular_topology
     # detect_covalent_bonds() # build unique connected pairs and add connectedAtoms to each atom 
     # get_angles()
     # get_dihedral_angles()
