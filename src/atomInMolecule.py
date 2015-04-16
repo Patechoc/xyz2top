@@ -30,6 +30,8 @@ class atomInfos(object):
         return self.get_content_atomCoord()
     def setSymbol(self, symbol):
         self.atomSymbol = symbol
+    def coordinates(self):
+        return [self.xCoord,self.yCoord,self.zCoord]
     def setUnitDistance(self, unitDistance):
         self.unitDistance = unitDistance
     def setCharge(self, charge):

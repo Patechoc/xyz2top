@@ -9,16 +9,16 @@ import atomInMolecule as mol
 import elements
 
 class atomEntity(object):
-    def __init__(self, atomObject, atomIndex):
+    def __init__(self, atomInfos, atomIndex):
         self.atomIndex     = atomIndex
-        self.atomObject    = atomObject
-        self.indicesNeighbours = []
+        self.atomInfos    = atomInfos
+        self.neighbourIndices = []
     def add_neighbourAtom(self, atomEntityObject):
-        self.indicesNeighbours.append(atomEntityObject.atomIndex)
+        self.neighbourIndices.append(atomEntityObject.atomIndex)
     def __str__(self):
-        str = "ATOM ENTITY: index={}, infos= {}".format(self.atomIndex,self.atomObject)
-        if len(self.indicesNeighbours) > 0:
-            str += ", #neighbours= {} ({})".format(len(self.indicesNeighbours),self.indicesNeighbours)
+        str = "ATOM ENTITY: index={}, infos= {}".format(self.atomIndex,self.atomInfos)
+        if len(self.neighbourIndices) > 0:
+            str += ", #neighbours= {} ({})".format(len(self.neighbourIndices),self.neighbourIndices)
         else:
             str += ", #neighbours= 0"
         return str
@@ -28,8 +28,8 @@ class atomPair(object):
         self.atomEntity_i = atomEntity_i
         self.atomEntity_j = atomEntity_j
         # INTER-ATOMIC DISTANCE
-        self.distance = get_atomic_separation(self.atomEntity_i.atomObject,
-                                            self.atomEntity_j.atomObject)
+        self.distance = get_interatomic_distance(self.atomEntity_i.atomInfos,
+                                            self.atomEntity_j.atomInfos)
         # COVALENT BOND DISTANCE
         # http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius
         self.covDist = self.sum_covalent_radii()
@@ -42,12 +42,39 @@ class atomPair(object):
         ".format(self.atomEntity_i,  self.atomEntity_j,
                  self.covDist, self.distance)
     def sum_covalent_radii(self):
-        ele_ai = elements.ELEMENTS[self.atomEntity_i.atomObject.atomSymbol]
-        ele_aj = elements.ELEMENTS[self.atomEntity_j.atomObject.atomSymbol]
+        ele_ai = elements.ELEMENTS[self.atomEntity_i.atomInfos.atomSymbol]
+        ele_aj = elements.ELEMENTS[self.atomEntity_j.atomInfos.atomSymbol]
         covRad_ai = ele_ai.covrad
         covRad_aj = ele_aj.covrad
         return covRad_ai + covRad_aj
 
+class atomTriple(object):
+    def __init__(self, atomEntity_i, atomEntity_j, atomEntity_k):
+        self.atomEntity_i = atomEntity_i
+        self.atomEntity_j = atomEntity_j
+        self.atomEntity_k = atomEntity_k
+        self.vector_ji = np.array(atomEntity_i.atomInfos.coordinates()) - np.array(atomEntity_j.atomInfos.coordinates())
+        self.vector_jk = np.array(atomEntity_k.atomInfos.coordinates()) - np.array(atomEntity_j.atomInfos.coordinates())
+        self.distance_ji = math.sqrt(np.dot(self.vector_ji, self.vector_ji))
+        self.distance_jk = math.sqrt(np.dot(self.vector_jk, self.vector_jk))
+        self.cos_angle_ijk = np.dot(self.vector_ji,self.vector_jk)/self.distance_ji/self.distance_jk
+        self.angle_ijk = np.arccos(self.cos_angle_ijk)
+    def __str__(self):
+        return "ATOM TRIPLE between:\n\
+        \tI: {}\n\
+        \tJ: {}\n\
+        \tK: {}\n\
+        \tdistance JI: {}\n\
+        \tdistance JK: {}\n\
+        \tangle IJK=acos(JI.JK): {} radians, {} degres\
+        ".format(self.atomEntity_i,  self.atomEntity_j, self.atomEntity_k,
+                 self.distance_ji, self.distance_jk,
+                 self.angle_ijk, self.get_angle_ijk())
+    def get_angle_ijk(self, inDegree=True):
+        if inDegree:
+            return self.angle_ijk*180./math.pi
+        else:
+            return self.angle_ijk
 
 class topology(object):
     def __init__(self, molecule, covRadFactor=1.3):
@@ -57,59 +84,72 @@ class topology(object):
         # connections detected as covalent bonds
         self.covRadFactor = covRadFactor
         self.atomicPairs = [] # contains all atomPairs
-        self.connections = [] # contains only atomPairs detected as connected
-        self.atomNeighbours = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
+        self.atomEntities = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
+        self.covalentBonds = [] # contains only atomPairs detected as connected
+        self.covalentBondAngles = [] # contains only atomPairs detected as connected
+    def get_indices_neighbouringAtoms(self, indexAtomEntity):
+        entity = self.get_atomEntity_by_index(indexAtomEntity)
+        return entity.neighbourIndices
+    def get_atomEntity_by_index(self, indexAtomEntity):
+        return [ai for i,ai in enumerate(self.atomEntities) if i == indexAtomEntity][0]
     def __str__(self):
         return "TOPOLOGY:\
         \n\tmolecule: {} ({} atoms)\
         \n\tCovalent radius factor: {}\
         \n\tTotal nb. of possible atomic pairs : {}\
         \n\tTotal nb. of pairs detected as bonds: {}\
+        \n\tTotal nb. of angles: {}\
         ".format(self.molecule.shortname, self.molecule.nbAtomsInMolecule,
                  self.covRadFactor, len(self.atomicPairs),
-                 len(self.connections))
+                 len(self.covalentBonds),
+                 len(self.covalentBondAngles))
 
     def is_connected(self, pair):
         isConnected = False
-        if ( get_atomic_separation(pair.atomEntity_i.atomObject,
-                                   pair.atomEntity_j.atomObject)
+        if ( get_interatomic_distance(pair.atomEntity_i.atomInfos,
+                                   pair.atomEntity_j.atomInfos)
              < self.covRadFactor * pair.covDist):
             isConnected = True
         return isConnected
 
-    def check_connection(self, ai, aj, i, j):
+    def check_covalentBond(self, ai, aj, i, j):
         entity_i = atomEntity(ai, i)
         entity_j = atomEntity(aj, j)
         pair = atomPair(entity_i, entity_j)
         # add the pair to the list of atomic pairs
         self.atomicPairs.append(pair)
-        # if the atoms are 'close' enough, add the pair to the list of connections too
+        # if the atoms are 'close' enough, add the pair to the list of covalentBonds too
         if self.is_connected(pair):
-            self.connections.append(pair)
-            self.atomNeighbours[i].add_neighbourAtom(entity_j)
-            self.atomNeighbours[j].add_neighbourAtom(entity_i)
-            #print atomPair(self.atomNeighbours[i], self.atomNeighbours[j])
+            self.covalentBonds.append(pair)
+            self.atomEntities[i].add_neighbourAtom(entity_j)
+            self.atomEntities[j].add_neighbourAtom(entity_i)
+            #print atomPair(self.atomEntities[i], self.atomEntities[j])
         #print pair
 
-    def get_atomicConnections(self):
-        print "covRadFactor: ",self.covRadFactor
+    def get_covalentBonds(self):
         # go through all unique pairs of atoms
         # compare distance to covalent bond distance (scaled)
-        [[self.check_connection(ai, aj, i, j) for j, aj in enumerate(self.molecule.listAtoms) if j>i] for i, ai in enumerate(self.molecule.listAtoms[:-1])]
-        print "Nb. of total unique pair of atoms: ",len(self.atomicPairs)
-        print "Nb. of covalent bond detected: ",len(self.connections)
+        [[self.check_covalentBond(ai, aj, i, j) for j, aj in enumerate(self.molecule.listAtoms) if j>i] for i, ai in enumerate(self.molecule.listAtoms[:-1])]
+        #print "Nb. of total unique pair of atoms: ",len(self.atomicPairs)
+        #print "Nb. of covalent bond detected: ",len(self.covalentBonds)
 
-    def get_distanceMatrix(self):
-        mat = [[get_atomic_separation(ai, aj) for j, aj in enumerate(self.molecule.listAtoms) if j>i] for i, ai in enumerate(self.molecule.listAtoms[:-1])]
-        self.distanceMatrix = mat
-        return mat
-
-    def read_distance(self, index_i, index_j):
-        return self.distanceMatrix[index_i][index_j]
+    def get_covalentBondAngles(self):
+        indicesAtomsWithEnoughBonds =[j for j,aj in enumerate(self.atomEntities)
+                                      if len(self.get_atomEntity_by_index(j).neighbourIndices) > 1]
+        for j in indicesAtomsWithEnoughBonds:
+            for i in self.get_indices_neighbouringAtoms(j):
+                for k in self.get_indices_neighbouringAtoms(j):
+                    if k>i:
+                        ai = self.get_atomEntity_by_index(i)
+                        aj = self.get_atomEntity_by_index(j)
+                        ak = self.get_atomEntity_by_index(k)
+                        self.covalentBondAngles.append(atomTriple(ai,aj,ak))
+                        #if aj.atomInfos.atomSymbol == "C" and j==9:
+                        #    print atomTriple(ai,aj,ak)
 
     def build_topology(self):
-        self.get_distanceMatrix() # DEPRECATED
-        self.get_atomicConnections()
+        self.get_covalentBonds()
+        self.get_covalentBondAngles()
 
 def read_arguments():
     parser = argparse.ArgumentParser()
@@ -127,14 +167,14 @@ def read_arguments():
     args = parser.parse_args()
     return args
 
-def get_atomic_separation(ai,aj):
+def get_interatomic_distance(atomInfos_i,atomInfos_j):
     """
-    aj and aj are atomInfos objects and this function
+    atomInfos_i and atomInfos_j are atomInfos objects and this function
     returns the interatomic distance which separates them
     """
-    return  math.sqrt((ai.xCoord-aj.xCoord)**2
-                         +(ai.yCoord-aj.yCoord)**2
-                         +(ai.zCoord-aj.zCoord)**2)
+    return  math.sqrt((atomInfos_i.xCoord-atomInfos_j.xCoord)**2
+                      +(atomInfos_i.yCoord-atomInfos_j.yCoord)**2
+                      +(atomInfos_i.zCoord-atomInfos_j.zCoord)**2)
 
 def main():
     # read inputs
