@@ -84,14 +84,14 @@ class atomQuadruple(object):
         self.atomEntity_l = atomEntity_l
         self.vector_ji = np.array(atomEntity_i.atomInfos.coordinates()) - np.array(atomEntity_j.atomInfos.coordinates())
         self.vector_jk = np.array(atomEntity_k.atomInfos.coordinates()) - np.array(atomEntity_j.atomInfos.coordinates())
-        self.vector_kl = np.array(atomEntity_l.atomInfos.coordinates()) - np.array(atomEntity_l.atomInfos.coordinates())
+        self.vector_kl = np.array(atomEntity_l.atomInfos.coordinates()) - np.array(atomEntity_k.atomInfos.coordinates())
         self.distance_ji = math.sqrt(np.dot(self.vector_ji, self.vector_ji))
         self.distance_jk = math.sqrt(np.dot(self.vector_jk, self.vector_jk))
         self.distance_kl = math.sqrt(np.dot(self.vector_kl, self.vector_kl))
         self.vector_orthoJK_JI = np.cross(self.vector_jk, self.vector_ji)/self.distance_ji/self.distance_jk
         self.vector_orthoKJ_KL = np.cross(-self.vector_jk, self.vector_kl)/self.distance_kl/self.distance_jk
         self.cos_angle_ijkl = np.dot(self.vector_orthoJK_JI, self.vector_orthoKJ_KL)
-        self.angle_ijkl = np.arccos(self.cos_angle_ijk)
+        self.angle_ijkl = np.arccos(self.cos_angle_ijkl)
     def __str__(self):
         return "ATOM QUADRUPLE between:\n\
         \tI: {}\n\
@@ -105,7 +105,7 @@ class atomQuadruple(object):
         \t  where n1 and n2 are vector orthogonal to planes (IJK) and (JKL) respectively\
         ".format(self.atomEntity_i,  self.atomEntity_j, self.atomEntity_k, self.atomEntity_l,
                  self.distance_ji, self.distance_jk, self.distance_kl,
-                 self.angle_ijkl, self.get_angle_ijkl())
+                 self.angle_ijkl, self.get_dihedral_angle_ijkl())
     def get_dihedral_angle_ijkl(self, inDegree=True):
         if inDegree:
             return self.angle_ijkl*180./math.pi
@@ -189,30 +189,33 @@ class topology(object):
                         #    print atomTriple(ai,aj,ak)
 
     def get_covalentDihedralAngles(self):
-        # reduce the search to the bonding atoms that have 'at least' 2 neighbours each
+        ### reduce the search to the bonding atoms that have 'at least' 2 neighbours each
         indicesPairsWithEnoughNeighbours = []
         for indPair,pair in enumerate(self.covalentBonds):
-            print "index of the pair: ", indPair
-            print atomPair(self.get_atomEntity_by_index(pair.atomEntity_i.atomIndex),\
-            self.get_atomEntity_by_index(pair.atomEntity_j.atomIndex))
+            #print "index of the pair: ", indPair
+            #print atomPair(self.get_atomEntity_by_index(pair.atomEntity_i.atomIndex),\
+            #self.get_atomEntity_by_index(pair.atomEntity_j.atomIndex))
             indicesNeighboursAtom2 = self.get_indices_neighbouringAtoms(pair.atomEntity_i.atomIndex)
             indicesNeighboursAtom3 = self.get_indices_neighbouringAtoms(pair.atomEntity_j.atomIndex)
             if len(indicesNeighboursAtom2)>1 and len(indicesNeighboursAtom3)>1:
                 indicesPairsWithEnoughNeighbours.append(indPair)
-            print indicesPairsWithEnoughNeighbours
-#        print indicesPairsWithEnoughNeighbours
-        # indicesAtomsWithEnoughBonds =[j for j,aj in enumerate(self.atomEntities)
-        #                               if len(self.get_atomEntity_by_index(j).neighbourIndices) > 1]
-        # for j in indicesAtomsWithEnoughBonds:
-        #     for i in self.get_indices_neighbouringAtoms(j):
-        #         for k in self.get_indices_neighbouringAtoms(j):
-        #             if k>i:
-        #                 ai = self.get_atomEntity_by_index(i)
-        #                 aj = self.get_atomEntity_by_index(j)
-        #                 ak = self.get_atomEntity_by_index(k)
-        #                 self.covalentBondAngles.append(atomTriple(ai,aj,ak))
-        #                 #if aj.atomInfos.atomSymbol == "C" and j==9:
-        #                 #    print atomTriple(ai,aj,ak)
+        ### for each such bond, find all possible plans to compare and get dihedral angles
+        for indPair in indicesPairsWithEnoughNeighbours:
+            pairJK = self.covalentBonds[indPair]
+            j = pairJK.atomEntity_i.atomIndex
+            k = pairJK.atomEntity_j.atomIndex
+            atomJ  = self.get_atomEntity_by_index(j)
+            atomK  = self.get_atomEntity_by_index(k)
+            indicesAtom1 = [i for i in self.get_indices_neighbouringAtoms(j) if i!=k]
+            indicesAtom4 = [l for l in self.get_indices_neighbouringAtoms(k) if l!=j]
+            for i in indicesAtom1:
+                atomI = self.get_atomEntity_by_index(i)
+                for l in indicesAtom4:
+                    atomL = self.get_atomEntity_by_index(l)
+                    self.covalentDihedralAngles.append(atomQuadruple(atomI,atomJ,atomK,atomL))
+                    #print atomQuadruple(atomI,atomJ,atomK,atomL)
+                    if atomJ.atomInfos.atomSymbol == "C" and j==9:
+                        print atomQuadruple(atomI,atomJ,atomK,atomL)
 
     def build_topology(self):
         self.get_covalentBonds()
