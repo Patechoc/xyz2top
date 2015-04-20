@@ -83,15 +83,57 @@ class atomQuadruple(object):
         self.atomEntity_k = atomEntity_k
         self.atomEntity_l = atomEntity_l
         self.vector_ji = np.array(atomEntity_i.atomInfos.coordinates()) - np.array(atomEntity_j.atomInfos.coordinates())
+        #print "vecors"
+        #print self.vector_ji
         self.vector_jk = np.array(atomEntity_k.atomInfos.coordinates()) - np.array(atomEntity_j.atomInfos.coordinates())
+        #print self.vector_jk
         self.vector_kl = np.array(atomEntity_l.atomInfos.coordinates()) - np.array(atomEntity_k.atomInfos.coordinates())
-        self.distance_ji = math.sqrt(np.dot(self.vector_ji, self.vector_ji))
-        self.distance_jk = math.sqrt(np.dot(self.vector_jk, self.vector_jk))
-        self.distance_kl = math.sqrt(np.dot(self.vector_kl, self.vector_kl))
-        self.vector_orthoJK_JI = np.cross(self.vector_jk, self.vector_ji)/self.distance_ji/self.distance_jk
-        self.vector_orthoKJ_KL = np.cross(-self.vector_jk, self.vector_kl)/self.distance_kl/self.distance_jk
-        self.cos_angle_ijkl = np.dot(self.vector_orthoJK_JI, self.vector_orthoKJ_KL)
+        #print self.vector_jk
+        self.distance_ji = self.get_distance(self.vector_ji)
+        #print "distances"
+        #print self.distance_ji
+        self.distance_jk = self.get_distance(self.vector_jk)
+        #print self.distance_jk
+        self.distance_kl = self.get_distance(self.vector_kl)
+        #print self.distance_kl
+        self.vector_orthoJK_JI = np.cross(self.vector_jk/self.distance_jk, self.vector_ji/self.distance_ji)
+        self.dist_orthoJK_JI = self.get_distance(self.vector_orthoJK_JI)
+
+        self.vector_orthoKJ_IJ = np.cross(-self.vector_jk/self.distance_jk, -self.vector_ji/self.distance_ji)
+        self.dist_orthoKJ_IJ = self.get_distance(self.vector_orthoKJ_IJ)
+        #print "n1 n2"
+        #print self.vector_orthoJK_JI
+        #print "norm orthoJK_JI: ",np.dot(self.vector_orthoJK_JI,self.vector_orthoJK_JI)
+        self.vector_orthoKJ_KL = np.cross(-self.vector_jk/self.distance_jk, self.vector_kl/self.distance_kl)
+        self.dist_orthoKJ_KL = self.get_distance(self.vector_orthoKJ_KL)
+        #print self.vector_orthoKJ_KL
+        #print "norm orthoKJ_KL: ",np.dot(self.vector_orthoKJ_KL,self.vector_orthoKJ_KL)
+        self.cos_angle_ijkl = np.dot(self.vector_orthoJK_JI/self.dist_orthoJK_JI, self.vector_orthoKJ_KL/self.dist_orthoKJ_KL)
+        self.sin_angle_ijkl = np.cross(self.vector_orthoJK_JI/self.dist_orthoJK_JI, self.vector_orthoKJ_KL/self.dist_orthoKJ_KL)
+        #print "cos="
+        #print self.cos_angle_ijkl
+        if abs(self.cos_angle_ijkl) > 1.:
+            print "|cos(X)|>1 ????"
+            sys.exit(1)
         self.angle_ijkl = np.arccos(self.cos_angle_ijkl)
+        self.angleM_ijkl = math.asin(math.sqrt(np.dot(self.sin_angle_ijkl,self.sin_angle_ijkl)))
+        #print "arccos:"
+        #print self.angle_ijkl
+        #print self.get_dihedral_angle_ijkl 
+
+        ##  The vectors \mathbf{b}_1 and \mathbf{b}_2 define the first plane,
+        ## whereas \mathbf{b}_2 and \mathbf{b}_3 define the second plane.
+        self.vector_B1 = -self.vector_ji / self.get_distance(self.vector_ji)
+        self.vector_B2 =  self.vector_jk / self.get_distance(self.vector_jk)
+        self.vector_B3 =  self.vector_kl / self.get_distance(self.vector_kl)
+        # n1= b1 x b2
+        self.vector_N1 = np.cross(self.vector_B1, self.vector_B2)
+        # n2= b2 x b3
+        self.vector_N2 = np.cross(self.vector_B2, self.vector_B3)
+        # Dihedral= atan2( dot(n1xn2,b2/|b2|) , dot(n1,n2))
+        self.dihedral = np.arctan2( np.dot(np.cross(self.vector_N1, self.vector_N2),self.vector_B2), np.dot(self.vector_N1, self.vector_N2) )
+    def get_distance(self, vector):
+        return math.sqrt(np.dot(vector, vector))
     def __str__(self):
         return "ATOM QUADRUPLE between:\n\
         \tI: {}\n\
@@ -101,11 +143,16 @@ class atomQuadruple(object):
         \tdistance JI: {}\n\
         \tdistance JK: {}\n\
         \tdistance KL: {}\n\
+        \tsin(...) {}\n\
         \tangle IJKL=acos(n1,n2): {} radians, {} degres\n\
+        \tangle IJKL=acos(n1,n2): {} radians, {} degres (math module)\n\
+        \tdihedral =atan2(y,x): {} radians, {} degres\n\
         \t  where n1 and n2 are vector orthogonal to planes (IJK) and (JKL) respectively\
         ".format(self.atomEntity_i,  self.atomEntity_j, self.atomEntity_k, self.atomEntity_l,
                  self.distance_ji, self.distance_jk, self.distance_kl,
-                 self.angle_ijkl, self.get_dihedral_angle_ijkl())
+                 self.sin_angle_ijkl,
+                 self.angle_ijkl, self.get_dihedral_angle_ijkl(), self.angleM_ijkl, self.angleM_ijkl*180./math.pi,
+                 self.dihedral, self.dihedral*180./math.pi)
     def get_dihedral_angle_ijkl(self, inDegree=True):
         if inDegree:
             return self.angle_ijkl*180./math.pi
@@ -214,7 +261,7 @@ class topology(object):
                     atomL = self.get_atomEntity_by_index(l)
                     self.covalentDihedralAngles.append(atomQuadruple(atomI,atomJ,atomK,atomL))
                     #print atomQuadruple(atomI,atomJ,atomK,atomL)
-                    if atomJ.atomInfos.atomSymbol == "C" and j==9:
+                    if atomJ.atomInfos.atomSymbol == "C" and j==9 and k==19:
                         print atomQuadruple(atomI,atomJ,atomK,atomL)
 
     def build_topology(self):
