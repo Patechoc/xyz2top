@@ -10,11 +10,17 @@ import elements
 
 class atomEntity(object):
     def __init__(self, atomInfos, atomIndex):
-        self.atomIndex     = atomIndex
-        self.atomInfos    = atomInfos
+        self.atomIndex = atomIndex
+        self.atomInfos = atomInfos
         self.neighbourIndices = []
     def add_neighbourAtom(self, atomEntityObject):
         self.neighbourIndices.append(atomEntityObject.atomIndex)
+    def get_object(self):
+        json = {}
+        json["atomIndex"] = self.atomIndex
+        json["atomInfos"] = self.atomInfos.get_object()
+        json["neighbourIndices"] = self.neighbourIndices
+        return json
     def __str__(self):
         str = "ATOM ENTITY: index={}, infos= {}".format(self.atomIndex,self.atomInfos)
         if len(self.neighbourIndices) > 0:
@@ -29,10 +35,17 @@ class atomPair(object):
         self.atomEntity_j = atomEntity_j
         # INTER-ATOMIC DISTANCE
         self.distance = get_interatomic_distance(self.atomEntity_i.atomInfos,
-                                            self.atomEntity_j.atomInfos)
+                                                 self.atomEntity_j.atomInfos)
         # COVALENT BOND DISTANCE
         # http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius
         self.covDist = self.sum_covalent_radii()
+    def get_object(self):
+        json = {}
+        json["atomEntity_i"] = self.atomEntity_i.get_object()
+        json["atomEntity_j"] = self.atomEntity_j.get_object()
+        json["distance"] = self.distance
+        json["covDist"] = self.covDist
+        return json
     def __str__(self):
         return "ATOM PAIR between:\n\
         \t {}\n\
@@ -59,6 +72,13 @@ class atomTriple(object):
         self.distance_jk = math.sqrt(np.dot(self.vector_jk, self.vector_jk))
         self.cos_angle_ijk = np.dot(self.vector_ji,self.vector_jk)/self.distance_ji/self.distance_jk
         self.angle_ijk = np.arccos(self.cos_angle_ijk)
+    def get_object(self):
+        json = {}
+        json["atomEntity_i"] = self.atomEntity_i.get_object()
+        json["atomEntity_j"] = self.atomEntity_j.get_object()
+        json["atomEntity_k"] = self.atomEntity_k.get_object()
+        json["angle_ijk"] = self.angle_ijk
+        return json
     def __str__(self):
         return "ATOM TRIPLE between:\n\
         \tI: {}\n\
@@ -82,82 +102,46 @@ class atomQuadruple(object):
         self.atomEntity_j = atomEntity_j
         self.atomEntity_k = atomEntity_k
         self.atomEntity_l = atomEntity_l
-        self.vector_ji = np.array(atomEntity_i.atomInfos.coordinates()) - np.array(atomEntity_j.atomInfos.coordinates())
-        #print "vecors"
-        #print self.vector_ji
-        self.vector_jk = np.array(atomEntity_k.atomInfos.coordinates()) - np.array(atomEntity_j.atomInfos.coordinates())
-        #print self.vector_jk
-        self.vector_kl = np.array(atomEntity_l.atomInfos.coordinates()) - np.array(atomEntity_k.atomInfos.coordinates())
-        #print self.vector_jk
-        self.distance_ji = self.get_distance(self.vector_ji)
-        #print "distances"
-        #print self.distance_ji
-        self.distance_jk = self.get_distance(self.vector_jk)
-        #print self.distance_jk
-        self.distance_kl = self.get_distance(self.vector_kl)
-        #print self.distance_kl
-        self.vector_orthoJK_JI = np.cross(self.vector_jk/self.distance_jk, self.vector_ji/self.distance_ji)
-        self.dist_orthoJK_JI = self.get_distance(self.vector_orthoJK_JI)
-
-        self.vector_orthoKJ_IJ = np.cross(-self.vector_jk/self.distance_jk, -self.vector_ji/self.distance_ji)
-        self.dist_orthoKJ_IJ = self.get_distance(self.vector_orthoKJ_IJ)
-        #print "n1 n2"
-        #print self.vector_orthoJK_JI
-        #print "norm orthoJK_JI: ",np.dot(self.vector_orthoJK_JI,self.vector_orthoJK_JI)
-        self.vector_orthoKJ_KL = np.cross(-self.vector_jk/self.distance_jk, self.vector_kl/self.distance_kl)
-        self.dist_orthoKJ_KL = self.get_distance(self.vector_orthoKJ_KL)
-        #print self.vector_orthoKJ_KL
-        #print "norm orthoKJ_KL: ",np.dot(self.vector_orthoKJ_KL,self.vector_orthoKJ_KL)
-        self.cos_angle_ijkl = np.dot(self.vector_orthoJK_JI/self.dist_orthoJK_JI, self.vector_orthoKJ_KL/self.dist_orthoKJ_KL)
-        self.sin_angle_ijkl = np.cross(self.vector_orthoJK_JI/self.dist_orthoJK_JI, self.vector_orthoKJ_KL/self.dist_orthoKJ_KL)
-        #print "cos="
-        #print self.cos_angle_ijkl
-        if abs(self.cos_angle_ijkl) > 1.:
-            print "|cos(X)|>1 ????"
-            sys.exit(1)
-        self.angle_ijkl = np.arccos(self.cos_angle_ijkl)
-        self.angleM_ijkl = math.asin(math.sqrt(np.dot(self.sin_angle_ijkl,self.sin_angle_ijkl)))
-        #print "arccos:"
-        #print self.angle_ijkl
-        #print self.get_dihedral_angle_ijkl 
-
-        ##  The vectors \mathbf{b}_1 and \mathbf{b}_2 define the first plane,
-        ## whereas \mathbf{b}_2 and \mathbf{b}_3 define the second plane.
-        self.vector_B1 = -self.vector_ji / self.get_distance(self.vector_ji)
-        self.vector_B2 =  self.vector_jk / self.get_distance(self.vector_jk)
-        self.vector_B3 =  self.vector_kl / self.get_distance(self.vector_kl)
+        vector_ij = np.array(atomEntity_j.atomInfos.coordinates()) - np.array(atomEntity_i.atomInfos.coordinates())
+        vector_jk = np.array(atomEntity_k.atomInfos.coordinates()) - np.array(atomEntity_j.atomInfos.coordinates())
+        vector_kl = np.array(atomEntity_l.atomInfos.coordinates()) - np.array(atomEntity_k.atomInfos.coordinates())
+        ##  The vectors B1 and B2 define the first plane,
+        ## whereas B2 and B3 define the second plane.
+        vector_B1 =  vector_ij / self.get_distance(vector_ij)
+        vector_B2 =  vector_jk / self.get_distance(vector_jk)
+        vector_B3 =  vector_kl / self.get_distance(vector_kl)
         # n1= b1 x b2
-        self.vector_N1 = np.cross(self.vector_B1, self.vector_B2)
+        vector_N1 = np.cross(vector_B1, vector_B2)
         # n2= b2 x b3
-        self.vector_N2 = np.cross(self.vector_B2, self.vector_B3)
+        vector_N2 = np.cross(vector_B2, vector_B3)
         # Dihedral= atan2( dot(n1xn2,b2/|b2|) , dot(n1,n2))
-        self.dihedral = np.arctan2( np.dot(np.cross(self.vector_N1, self.vector_N2),self.vector_B2), np.dot(self.vector_N1, self.vector_N2) )
+        self.dihedral = np.arctan2( np.dot(np.cross(vector_N1, vector_N2),vector_B2),
+                                    np.dot(vector_N1, vector_N2) )
     def get_distance(self, vector):
         return math.sqrt(np.dot(vector, vector))
+    def get_object(self):
+        json = {}
+        json["atomEntity_i"] = self.atomEntity_i.get_object()
+        json["atomEntity_j"] = self.atomEntity_j.get_object()
+        json["atomEntity_k"] = self.atomEntity_k.get_object()
+        json["atomEntity_l"] = self.atomEntity_l.get_object()
+        json["dihedral_degree"] = self.get_dihedral_angle_ijkl()
+        json["dihedral_radian"] = self.get_dihedral_angle_ijkl(inDegree=False)
+        return json
     def __str__(self):
         return "ATOM QUADRUPLE between:\n\
         \tI: {}\n\
         \tJ: {}\n\
         \tK: {}\n\
         \tL: {}\n\
-        \tdistance JI: {}\n\
-        \tdistance JK: {}\n\
-        \tdistance KL: {}\n\
-        \tsin(...) {}\n\
-        \tangle IJKL=acos(n1,n2): {} radians, {} degres\n\
-        \tangle IJKL=acos(n1,n2): {} radians, {} degres (math module)\n\
-        \tdihedral =atan2(y,x): {} radians, {} degres\n\
-        \t  where n1 and n2 are vector orthogonal to planes (IJK) and (JKL) respectively\
+        \tdihedral angle: {} radians, {} degres\
         ".format(self.atomEntity_i,  self.atomEntity_j, self.atomEntity_k, self.atomEntity_l,
-                 self.distance_ji, self.distance_jk, self.distance_kl,
-                 self.sin_angle_ijkl,
-                 self.angle_ijkl, self.get_dihedral_angle_ijkl(), self.angleM_ijkl, self.angleM_ijkl*180./math.pi,
-                 self.dihedral, self.dihedral*180./math.pi)
+                 self.get_dihedral_angle_ijkl(inDegree=False), self.get_dihedral_angle_ijkl())
     def get_dihedral_angle_ijkl(self, inDegree=True):
         if inDegree:
-            return self.angle_ijkl*180./math.pi
+            return self.dihedral*180./math.pi
         else:
-            return self.angle_ijkl
+            return self.dihedral
 
 class topology(object):
     def __init__(self, molecule, covRadFactor=1.3):
@@ -171,13 +155,22 @@ class topology(object):
         self.covalentBonds = [] # contains only atomPairs detected as connected
         self.covalentBondAngles = []
         self.covalentDihedralAngles = []
+    def get_object(self):
+        json = {}
+        json["molecule"] = self.molecule.get_object()
+        json["atomEntities"] = [e.get_object() for e in self.atomEntities]
+        json["atomicPairs"] = [p.get_object() for p in self.atomicPairs]
+        json["covalentBonds"] = [b.get_object() for b in self.covalentBonds]
+        json["covalentBondAngles"] = [b.get_object() for b in self.covalentBondAngles]
+        json["covalentDihedralAngles"] = [b.get_object() for b in self.covalentDihedralAngles]
+        return json
     def get_indices_neighbouringAtoms(self, indexAtomEntity):
         entity = self.get_atomEntity_by_index(indexAtomEntity)
         return entity.neighbourIndices
     def get_atomEntity_by_index(self, indexAtomEntity):
         return [ai for i,ai in enumerate(self.atomEntities) if i == indexAtomEntity][0]
     def __str__(self):
-        return "TOPOLOGY:\
+        return "TOPOLOGY summary:\
         \n\tmolecule: {} ({} atoms)\
         \n\tCovalent radius factor: {}\
         \n\tTotal nb. of possible atomic pairs : {}\
@@ -198,7 +191,7 @@ class topology(object):
             isConnected = True
         return isConnected
 
-    def check_covalentBond(self, ai, aj, i, j):
+    def add_covalentBond(self, ai, aj, i, j):
         entity_i = atomEntity(ai, i)
         entity_j = atomEntity(aj, j)
         pair = atomPair(entity_i, entity_j)
@@ -210,12 +203,12 @@ class topology(object):
             self.atomEntities[i].add_neighbourAtom(entity_j)
             self.atomEntities[j].add_neighbourAtom(entity_i)
             #print atomPair(self.atomEntities[i], self.atomEntities[j])
-        #print pair
+        #print pair.get_object()
 
     def get_covalentBonds(self):
         # go through all unique pairs of atoms
         # compare distance to covalent bond distance (scaled)
-        [[self.check_covalentBond(ai, aj, i, j) for j, aj in enumerate(self.molecule.listAtoms) if j>i] for i, ai in enumerate(self.molecule.listAtoms[:-1])]
+        [[self.add_covalentBond(ai, aj, i, j) for j, aj in enumerate(self.molecule.listAtoms) if j>i] for i, ai in enumerate(self.molecule.listAtoms[:-1])]
         #print "Nb. of total unique pair of atoms: ",len(self.atomicPairs)
         #print "Nb. of covalent bond detected: ",len(self.covalentBonds)
 
@@ -232,8 +225,8 @@ class topology(object):
                         ak = self.get_atomEntity_by_index(k)
                         self.covalentBondAngles.append(atomTriple(ai,aj,ak))
                         #print  atomTriple(ai,aj,ak)
-                        #if aj.atomInfos.atomSymbol == "C" and j==9:
-                        #    print atomTriple(ai,aj,ak)
+                        if aj.atomInfos.atomSymbol == "C" and j==9:
+                            print atomTriple(ai,aj,ak)
 
     def get_covalentDihedralAngles(self):
         ### reduce the search to the bonding atoms that have 'at least' 2 neighbours each
@@ -261,13 +254,21 @@ class topology(object):
                     atomL = self.get_atomEntity_by_index(l)
                     self.covalentDihedralAngles.append(atomQuadruple(atomI,atomJ,atomK,atomL))
                     #print atomQuadruple(atomI,atomJ,atomK,atomL)
-                    #if atomJ.atomInfos.atomSymbol == "C" and j==9 and k==19:
-                    #    print atomQuadruple(atomI,atomJ,atomK,atomL)
+                    if atomJ.atomInfos.atomSymbol == "C" and j==9 and k==19:
+                        print atomQuadruple(atomI,atomJ,atomK,atomL)
 
     def build_topology(self):
         self.get_covalentBonds()
         self.get_covalentBondAngles()
         self.get_covalentDihedralAngles()
+
+    def get_as_JSON(self):
+        topo = self.get_object()
+        import json
+        #with open('./tests/files/HistidineTopology.json', 'w') as outfile:
+        #    json.dump(jsonTopology, outfile, sort_keys=True, indent=4)
+        return json.dumps(topo, sort_keys=True, indent=4)
+
 
 def read_arguments():
     parser = argparse.ArgumentParser()
@@ -307,21 +308,22 @@ def main():
             with connections detected as covalent bonds if pair-atomic \
             distance goes below {} times the sum of the covalent radii.\
             ".format(args.filename, args.covRadFactor)
-    # parse_molecule_XYZ()
+    ### parse_molecule_XYZ()
     molecule = xyz.parse_XYZ(path_to_file)
-    print molecule.get_json()
+    #print molecule.get_object()
+    #print molecule
 
-    # build_matrix_distance()
+    ### compute the topology
     if (args.covRadFactor != None):
         molecular_topology = topology(molecule, args.covRadFactor)
     else:
         molecular_topology = topology(molecule)
     molecular_topology.build_topology()
-    #print molecular_topology
-    # detect_covalent_bonds() # build unique connected pairs and add connectedAtoms to each atom 
-    # get_angles()
-    # get_dihedral_angles()
-    # print_topology()
+    print molecular_topology
+    #### print topology to file
+    ### obj= molecular_topology.get_as_JSON()
+    ###with open('./tests/files/HistidineTopology.json', 'w') as outfile:
+    ###    outfile.write(obj)
 
 if __name__ == "__main__":
     main()

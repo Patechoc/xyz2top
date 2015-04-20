@@ -26,7 +26,7 @@ class atomInfos(object):
         self.xCoord = None
         self.yCoord = None
         self.zCoord = None
-    def get_json(self):
+    def get_object(self):
         json = {}
         json["atomSymbol"] = self.atomSymbol
         json["atomCharge"] = self.atomCharge
@@ -107,7 +107,7 @@ class molecule(object):
         self.charge= None
         self.comments = comments
         self.listAtoms = []
-    def get_json(self):
+    def get_object(self):
         json = {}
         json["name"] = self.name
         json["shortname"] = self.shortname
@@ -116,7 +116,7 @@ class molecule(object):
         json["charge"] = self.charge
         json["charge"] = self.charge
         json["comments"] = self.comments
-        json["listAtoms"] = [atom.get_json() for atom in self.listAtoms]
+        json["listAtoms"] = [atom.get_object() for atom in self.listAtoms]
         return json
     def setunitDistance(self,unitDistance):
         self.unitDistance = str(unitDistance)
