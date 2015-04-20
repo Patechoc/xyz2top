@@ -261,8 +261,8 @@ class topology(object):
                     atomL = self.get_atomEntity_by_index(l)
                     self.covalentDihedralAngles.append(atomQuadruple(atomI,atomJ,atomK,atomL))
                     #print atomQuadruple(atomI,atomJ,atomK,atomL)
-                    if atomJ.atomInfos.atomSymbol == "C" and j==9 and k==19:
-                        print atomQuadruple(atomI,atomJ,atomK,atomL)
+                    #if atomJ.atomInfos.atomSymbol == "C" and j==9 and k==19:
+                    #    print atomQuadruple(atomI,atomJ,atomK,atomL)
 
     def build_topology(self):
         self.get_covalentBonds()
@@ -309,7 +309,7 @@ def main():
             ".format(args.filename, args.covRadFactor)
     # parse_molecule_XYZ()
     molecule = xyz.parse_XYZ(path_to_file)
-    #print molecule
+    print molecule.get_json()
 
     # build_matrix_distance()
     if (args.covRadFactor != None):
@@ -317,7 +317,7 @@ def main():
     else:
         molecular_topology = topology(molecule)
     molecular_topology.build_topology()
-    print molecular_topology
+    #print molecular_topology
     # detect_covalent_bonds() # build unique connected pairs and add connectedAtoms to each atom 
     # get_angles()
     # get_dihedral_angles()

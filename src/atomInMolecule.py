@@ -26,6 +26,14 @@ class atomInfos(object):
         self.xCoord = None
         self.yCoord = None
         self.zCoord = None
+    def get_json(self):
+        json = {}
+        json["atomSymbol"] = self.atomSymbol
+        json["atomCharge"] = self.atomCharge
+        json["bohr_in_angstrom"] = self.bohr_in_angstrom
+        json["unitDistance"] = self.unitDistance
+        json["coordinates"] = self.coordinates()
+        return json
     def __str__(self):
         return self.get_content_atomCoord()
     def setSymbol(self, symbol):
@@ -99,6 +107,17 @@ class molecule(object):
         self.charge= None
         self.comments = comments
         self.listAtoms = []
+    def get_json(self):
+        json = {}
+        json["name"] = self.name
+        json["shortname"] = self.shortname
+        json["nbAtomsInMolecule"] = self.nbAtomsInMolecule
+        json["unitDistance"] = self.unitDistance
+        json["charge"] = self.charge
+        json["charge"] = self.charge
+        json["comments"] = self.comments
+        json["listAtoms"] = [atom.get_json() for atom in self.listAtoms]
+        return json
     def setunitDistance(self,unitDistance):
         self.unitDistance = str(unitDistance)
     def addAtomInfo(self,atom):
