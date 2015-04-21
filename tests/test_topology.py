@@ -3,7 +3,6 @@
 import unittest
 import topology
 import xyz
-import numpy as np
 
 class compared_topology_of_Histidine_with_known_results_from_Avogadro(unittest.TestCase):
     def setUp(self):

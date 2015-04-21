@@ -5,7 +5,6 @@ import argparse
 import numpy as np
 import xyz
 import math
-import atomInMolecule as mol
 import elements
 
 class atomEntity(object):
@@ -16,11 +15,11 @@ class atomEntity(object):
     def add_neighbourAtom(self, atomEntityObject):
         self.neighbourIndices.append(atomEntityObject.atomIndex)
     def get_object(self):
-        json = {}
-        json["atomIndex"] = self.atomIndex
-        json["atomInfos"] = self.atomInfos.get_object()
-        json["neighbourIndices"] = self.neighbourIndices
-        return json
+        obj = {}
+        obj["atomIndex"] = self.atomIndex
+        obj["atomInfos"] = self.atomInfos.get_object()
+        obj["neighbourIndices"] = self.neighbourIndices
+        return obj
     def __str__(self):
         str = "ATOM ENTITY: index={}, infos= {}".format(self.atomIndex,self.atomInfos)
         if len(self.neighbourIndices) > 0:
@@ -40,12 +39,12 @@ class atomPair(object):
         # http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius
         self.covDist = self.sum_covalent_radii()
     def get_object(self):
-        json = {}
-        json["atomEntity_i"] = self.atomEntity_i.get_object()
-        json["atomEntity_j"] = self.atomEntity_j.get_object()
-        json["distance"] = self.distance
-        json["covDist"] = self.covDist
-        return json
+        obj = {}
+        obj["atomEntity_i"] = self.atomEntity_i.get_object()
+        obj["atomEntity_j"] = self.atomEntity_j.get_object()
+        obj["distance"] = self.distance
+        obj["covDist"] = self.covDist
+        return obj
     def __str__(self):
         return "ATOM PAIR between:\n\
         \t {}\n\
@@ -73,12 +72,12 @@ class atomTriple(object):
         self.cos_angle_ijk = np.dot(self.vector_ji,self.vector_jk)/self.distance_ji/self.distance_jk
         self.angle_ijk = np.arccos(self.cos_angle_ijk)
     def get_object(self):
-        json = {}
-        json["atomEntity_i"] = self.atomEntity_i.get_object()
-        json["atomEntity_j"] = self.atomEntity_j.get_object()
-        json["atomEntity_k"] = self.atomEntity_k.get_object()
-        json["angle_ijk"] = self.angle_ijk
-        return json
+        obj = {}
+        obj["atomEntity_i"] = self.atomEntity_i.get_object()
+        obj["atomEntity_j"] = self.atomEntity_j.get_object()
+        obj["atomEntity_k"] = self.atomEntity_k.get_object()
+        obj["angle_ijk"] = self.angle_ijk
+        return obj
     def __str__(self):
         return "ATOM TRIPLE between:\n\
         \tI: {}\n\
@@ -120,14 +119,14 @@ class atomQuadruple(object):
     def get_distance(self, vector):
         return math.sqrt(np.dot(vector, vector))
     def get_object(self):
-        json = {}
-        json["atomEntity_i"] = self.atomEntity_i.get_object()
-        json["atomEntity_j"] = self.atomEntity_j.get_object()
-        json["atomEntity_k"] = self.atomEntity_k.get_object()
-        json["atomEntity_l"] = self.atomEntity_l.get_object()
-        json["dihedral_degree"] = self.get_dihedral_angle()
-        json["dihedral_radian"] = self.get_dihedral_angle(inDegree=False)
-        return json
+        obj = {}
+        obj["atomEntity_i"] = self.atomEntity_i.get_object()
+        obj["atomEntity_j"] = self.atomEntity_j.get_object()
+        obj["atomEntity_k"] = self.atomEntity_k.get_object()
+        obj["atomEntity_l"] = self.atomEntity_l.get_object()
+        obj["dihedral_degree"] = self.get_dihedral_angle()
+        obj["dihedral_radian"] = self.get_dihedral_angle(inDegree=False)
+        return obj
     def __str__(self):
         return "ATOM QUADRUPLE between:\n\
         \tI: {}\n\
@@ -156,14 +155,14 @@ class topology(object):
         self.covalentBondAngles = []
         self.covalentDihedralAngles = []
     def get_object(self):
-        json = {}
-        json["molecule"] = self.molecule.get_object()
-        json["atomEntities"] = [e.get_object() for e in self.atomEntities]
-        json["atomicPairs"] = [p.get_object() for p in self.atomicPairs]
-        json["covalentBonds"] = [b.get_object() for b in self.covalentBonds]
-        json["covalentBondAngles"] = [b.get_object() for b in self.covalentBondAngles]
-        json["covalentDihedralAngles"] = [b.get_object() for b in self.covalentDihedralAngles]
-        return json
+        obj = {}
+        obj["molecule"] = self.molecule.get_object()
+        obj["atomEntities"] = [e.get_object() for e in self.atomEntities]
+        obj["atomicPairs"] = [p.get_object() for p in self.atomicPairs]
+        obj["covalentBonds"] = [b.get_object() for b in self.covalentBonds]
+        obj["covalentBondAngles"] = [b.get_object() for b in self.covalentBondAngles]
+        obj["covalentDihedralAngles"] = [b.get_object() for b in self.covalentDihedralAngles]
+        return obj
     def get_indices_neighbouringAtoms(self, indexAtomEntity):
         entity = self.get_atomEntity_by_index(indexAtomEntity)
         return entity.neighbourIndices
@@ -320,11 +319,13 @@ def main():
     else:
         molecular_topology = topology(molecule)
     molecular_topology.build_topology()
+    print molecular_topology.get_as_JSON()
     print molecular_topology
-    #### print topology to file
-    ### obj= molecular_topology.get_as_JSON()
-    ###with open('./tests/files/HistidineTopology.json', 'w') as outfile:
-    ###    outfile.write(obj)
+
+    ### print topology to file
+    jsonString = molecular_topology.get_as_JSON()
+    with open('./topology.json', 'w') as outfile:
+        outfile.write(jsonString)
 
 if __name__ == "__main__":
     main()
