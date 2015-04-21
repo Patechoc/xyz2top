@@ -89,8 +89,8 @@ class atomTriple(object):
         \tangle IJK=acos(JI.JK): {} radians, {} degres\
         ".format(self.atomEntity_i,  self.atomEntity_j, self.atomEntity_k,
                  self.distance_ji, self.distance_jk,
-                 self.angle_ijk, self.get_angle_ijk())
-    def get_angle_ijk(self, inDegree=True):
+                 self.angle_ijk, self.get_angle())
+    def get_angle(self, inDegree=True):
         if inDegree:
             return self.angle_ijk*180./math.pi
         else:
@@ -105,7 +105,7 @@ class atomQuadruple(object):
         vector_ij = np.array(atomEntity_j.atomInfos.coordinates()) - np.array(atomEntity_i.atomInfos.coordinates())
         vector_jk = np.array(atomEntity_k.atomInfos.coordinates()) - np.array(atomEntity_j.atomInfos.coordinates())
         vector_kl = np.array(atomEntity_l.atomInfos.coordinates()) - np.array(atomEntity_k.atomInfos.coordinates())
-        ##  The vectors B1 and B2 define the first plane,
+        ##  The unit vectors B1 and B2 define the first plane,
         ## whereas B2 and B3 define the second plane.
         vector_B1 =  vector_ij / self.get_distance(vector_ij)
         vector_B2 =  vector_jk / self.get_distance(vector_jk)
@@ -125,8 +125,8 @@ class atomQuadruple(object):
         json["atomEntity_j"] = self.atomEntity_j.get_object()
         json["atomEntity_k"] = self.atomEntity_k.get_object()
         json["atomEntity_l"] = self.atomEntity_l.get_object()
-        json["dihedral_degree"] = self.get_dihedral_angle_ijkl()
-        json["dihedral_radian"] = self.get_dihedral_angle_ijkl(inDegree=False)
+        json["dihedral_degree"] = self.get_dihedral_angle()
+        json["dihedral_radian"] = self.get_dihedral_angle(inDegree=False)
         return json
     def __str__(self):
         return "ATOM QUADRUPLE between:\n\
@@ -136,8 +136,8 @@ class atomQuadruple(object):
         \tL: {}\n\
         \tdihedral angle: {} radians, {} degres\
         ".format(self.atomEntity_i,  self.atomEntity_j, self.atomEntity_k, self.atomEntity_l,
-                 self.get_dihedral_angle_ijkl(inDegree=False), self.get_dihedral_angle_ijkl())
-    def get_dihedral_angle_ijkl(self, inDegree=True):
+                 self.get_dihedral_angle(inDegree=False), self.get_dihedral_angle())
+    def get_dihedral_angle(self, inDegree=True):
         if inDegree:
             return self.dihedral*180./math.pi
         else:
@@ -202,7 +202,8 @@ class topology(object):
             self.covalentBonds.append(pair)
             self.atomEntities[i].add_neighbourAtom(entity_j)
             self.atomEntities[j].add_neighbourAtom(entity_i)
-            #print atomPair(self.atomEntities[i], self.atomEntities[j])
+            #if aj.atomSymbol == "O":
+            #    print atomPair(self.atomEntities[i], self.atomEntities[j])
         #print pair.get_object()
 
     def get_covalentBonds(self):
@@ -225,8 +226,8 @@ class topology(object):
                         ak = self.get_atomEntity_by_index(k)
                         self.covalentBondAngles.append(atomTriple(ai,aj,ak))
                         #print  atomTriple(ai,aj,ak)
-                        if aj.atomInfos.atomSymbol == "C" and j==9:
-                            print atomTriple(ai,aj,ak)
+                        #if aj.atomInfos.atomSymbol == "C" and j==9:
+                        #    print atomTriple(ai,aj,ak)
 
     def get_covalentDihedralAngles(self):
         ### reduce the search to the bonding atoms that have 'at least' 2 neighbours each
@@ -254,8 +255,8 @@ class topology(object):
                     atomL = self.get_atomEntity_by_index(l)
                     self.covalentDihedralAngles.append(atomQuadruple(atomI,atomJ,atomK,atomL))
                     #print atomQuadruple(atomI,atomJ,atomK,atomL)
-                    if atomJ.atomInfos.atomSymbol == "C" and j==9 and k==19:
-                        print atomQuadruple(atomI,atomJ,atomK,atomL)
+                    #if atomJ.atomInfos.atomSymbol == "C" and j==9 and k==19:
+                    #    print atomQuadruple(atomI,atomJ,atomK,atomL)
 
     def build_topology(self):
         self.get_covalentBonds()
