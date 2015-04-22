@@ -11,8 +11,9 @@ We will try to summarize here the decisions that leads to our final topology fil
 - This module only attemps to identify covalent bonds
 - covalent bonds are detected as such when the distance between 2 atoms is simply smaller or equal to the sum of their respective [covalent radius](http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius).
 
-  ![http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius](./img/covalent_vanderwaals.png)
+  ![test text](/img/covalent_vanderwaals.png)
 
+http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius
 The sum of the covalent radii can be optionnally multiplied by a coefficient (by default equal to 1.3. With that value, our module reproduces the bonds detected in a few tested molecules in Avogadro)) before being compared to the actual distance of the pair of atoms (e.g. if the coefficient is increased, potentially more pairs of atoms will be detected as being connected by a covalent bond).
 
 
