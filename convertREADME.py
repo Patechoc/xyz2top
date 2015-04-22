@@ -25,6 +25,6 @@ def convert_rst2md(readmeRST="README.rst",readmeMD="README.md"):
 
 def main():
    convert_md2rst()
-   
+
 if __name__ == '__main__':
     main()
