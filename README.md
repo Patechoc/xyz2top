@@ -28,14 +28,14 @@ The sum of the covalent radii can be optionnally multiplied by a coefficient (by
 ## Quick start
 
 You can install the xyz2top module simply with the following commands: 
-```
+```shell
 git clone https://github.com/Patechoc/xyz2top.git
 cd xyz2top
 sudo python setup.py install
 ```
 
 You can install the module locally with a virtual environment and the dependencies that were tested last for passing the tests:
-```
+```shell
 git clone https://github.com/Patechoc/xyz2top.git
 cd xyz2top
 sudo easy_install pip
@@ -48,7 +48,7 @@ deactivate
 
 or installing the development version:
 
-```
+```shell
 git clone https://github.com/Patechoc/xyz2top.git
 cd xyz2top
 sudo easy_install pip
@@ -63,14 +63,14 @@ deactivate
 
 ## Testing
 
-```
+```shell
 cd tests
 py.test 
 ```
 
 or some specific test module:
 
-```
+```shell
 cd tests
 py.test -q test_main.py  # to run a single test file
 ```
