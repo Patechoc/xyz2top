@@ -267,22 +267,41 @@ class topology(object):
 
 
     def order_convalentBondDistances(self):
-        str = ""
+        out = ""
+        list_pairs = []
         # build list of unique IDs to order covalent bond distances
-        return str
+        for indPair,pair in enumerate(self.covalentBonds):
+            [i,j] = sorted([pair.atomEntity_i.atomIndex, pair.atomEntity_j.atomIndex])
+            id = i * self.molecule.nbAtomsInMolecule + j
+            list_pairs.append([id, i, j, pair.covDist, pair.distance])
+        # order pairs by their IDs
+        ordered_list = sorted(list_pairs)
+        ordered_list.insert(0, ["uniquePairID", "index_i", "index_j", "covBondDist [A]", "distance [A]"])
+        out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(20, ' ')) for elem in pair]) for pair in ordered_list])
+        return out
 
 
     def get_topology_files(self, prefix=""):
+        filename_config = "configTopology.csv"
+        filename_bonds  = "covBondDist.csv"
+        if prefix != "":
+            filename_config = prefix + "_" + filename_config
+            filename_bonds  = prefix + "_" + filename_bonds
+
+        # config. file with arbitrary choice of covalent radius coefficient
+        # (defining if an atom pair is a covalent bond)
+        config = "covRadFactor = " + str(self.covRadFactor)
+        with open('./'+filename_config, 'w') as outfile:
+            outfile.write(config)
         # covalent bonds distances
         str_bonds = self.order_convalentBondDistances()
-        filename_bonds = "covBondDist.txt"
-        if prefix != "":
-            filename_bonds = prefix + "_" + filename_bonds
         with open('./'+filename_bonds, 'w') as outfile:
             outfile.write(str_bonds)
         # angles between bonds
         # dihedrals angles between bonds
-        print "files generated:\n" + "\t- " + filename_bonds;
+        print "files generated:" \
+            + "\n\t- " + filename_config \
+            + "\n\t- " + filename_bonds;
 
     def get_as_Zmatrix(self, useVariables=False):
         atomIndicesWritten = []
