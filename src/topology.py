@@ -281,27 +281,26 @@ class topology(object):
         return out
 
 
-    def get_topology_files(self, prefix=""):
-        filename_config = "configTopology.csv"
+    def get_topology_files(self, prefix = ""):
+        filename_config = "configTopology.txt"
         filename_bonds  = "covBondDist.csv"
-        if prefix != "":
-            filename_config = prefix + "_" + filename_config
-            filename_bonds  = prefix + "_" + filename_bonds
+        if prefix == "":
+            prefix = self.molecule.shortname
+        filename_config = prefix + "_" + filename_config
+        filename_bonds  = prefix + "_" + filename_bonds
 
         # config. file with arbitrary choice of covalent radius coefficient
         # (defining if an atom pair is a covalent bond)
         config = "covRadFactor = " + str(self.covRadFactor)
-        with open('./'+filename_config, 'w') as outfile:
+        with open(filename_config, 'w') as outfile:
             outfile.write(config)
         # covalent bonds distances
         str_bonds = self.order_convalentBondDistances()
-        with open('./'+filename_bonds, 'w') as outfile:
+        with open(filename_bonds, 'w') as outfile:
             outfile.write(str_bonds)
         # angles between bonds
         # dihedrals angles between bonds
-        print "files generated:" \
-            + "\n\t- " + filename_config \
-            + "\n\t- " + filename_bonds;
+        return [filename_config, filename_bonds]
 
     def get_as_Zmatrix(self, useVariables=False):
         atomIndicesWritten = []
@@ -382,8 +381,12 @@ def main():
     print molecular_topology.get_as_Zmatrix(useVariables=True)
 
     print  "\nCreate 3 topology files for bonds, angles and dihedrals + config.txt"
-    molecular_topology.get_topology_files(prefix=molecule.shortname)
-
+    [filename_config, filename_bonds] = molecular_topology.get_topology_files()
+    # print "files generated:" \
+    #     + "\n\t- " + filename_config \
+    #     + "\n\t- " + filename_bonds;
+    import filecmp
+    print filecmp.cmpfiles("./tests/files/", "./", filename_config)
 
 if __name__ == "__main__":
     main()

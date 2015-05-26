@@ -60,7 +60,7 @@ deactivate
 
 ```shell
 cd tests
-py.test 
+py.test -v
 ```
 
 or some specific test module:
