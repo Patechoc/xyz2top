@@ -36,7 +36,6 @@ class atomPair(object):
         self.distance = get_interatomic_distance(self.atomEntity_i.atomInfos,
                                                  self.atomEntity_j.atomInfos)
         # COVALENT BOND DISTANCE
-        # http://chemwiki.ucdavis.edu/Theoretical_Chemistry/Chemical_Bonding/General_Principles/Covalent_Bond_Distance,_Radius_and_van_der_Waals_Radius
         self.covDist = self.sum_covalent_radii()
     def get_object(self):
         obj = {}
@@ -145,9 +144,6 @@ class atomQuadruple(object):
 class topology(object):
     def __init__(self, molecule, covRadFactor=1.3):
         self.molecule = molecule
-        # inter-atomic distance as an upper triangular matrix of atom-pairs
-        self.distanceMatrix = None
-        # connections detected as covalent bonds
         self.covRadFactor = covRadFactor
         self.atomEntities = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
         self.atomicPairs = [] # contains all atomPairs
@@ -270,6 +266,39 @@ class topology(object):
         return json.dumps(topo, sort_keys=True, indent=4)
 
 
+    def order_convalentBondDistances(self):
+        str = ""
+        # build list of unique IDs to order covalent bond distances
+        return str
+
+
+    def get_topology_files(self, prefix=""):
+        # covalent bonds distances
+        str_bonds = self.order_convalentBondDistances()
+        filename_bonds = "covBondDist.txt"
+        if prefix != "":
+            filename_bonds = prefix + "_" + filename_bonds
+        with open('./'+filename_bonds, 'w') as outfile:
+            outfile.write(str_bonds)
+        # angles between bonds
+        # dihedrals angles between bonds
+        print "files generated:\n" + "\t- " + filename_bonds;
+
+    def get_as_Zmatrix(self, useVariables=False):
+        atomIndicesWritten = []
+        zmat=""
+        debug_msg =""
+        # find first atom with at least one neighbour
+        # (if atoms no neighbours, they should be treated in the end)
+        i = 0
+        atomI = self.get_atomEntity_by_index(i)
+        while(len(atomI.neighbourIndices) == 0):
+            i+=1
+            atomI = self.get_atomEntity_by_index(i)
+        print debug_msg
+        return zmat
+
+
 def read_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("filename",
@@ -319,13 +348,23 @@ def main():
     else:
         molecular_topology = topology(molecule)
     molecular_topology.build_topology()
-    print molecular_topology.get_as_JSON()
+#    print molecular_topology.get_as_JSON()
     print molecular_topology
 
     ### print topology to file
     jsonString = molecular_topology.get_as_JSON()
     with open('./topology.json', 'w') as outfile:
         outfile.write(jsonString)
+
+    print "\nZmatrix format:"
+    print molecular_topology.get_as_Zmatrix()
+
+    print "\nZmatrix format with variables:"
+    print molecular_topology.get_as_Zmatrix(useVariables=True)
+
+    print  "\nCreate 3 topology files for bonds, angles and dihedrals + config.txt"
+    molecular_topology.get_topology_files(prefix=molecule.shortname)
+
 
 if __name__ == "__main__":
     main()
