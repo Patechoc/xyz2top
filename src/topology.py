@@ -382,11 +382,10 @@ def main():
 
     print  "\nCreate 3 topology files for bonds, angles and dihedrals + config.txt"
     [filename_config, filename_bonds] = molecular_topology.get_topology_files()
-    # print "files generated:" \
-    #     + "\n\t- " + filename_config \
-    #     + "\n\t- " + filename_bonds;
-    import filecmp
-    print filecmp.cmpfiles("./tests/files/", "./", filename_config)
+    print "files generated:" \
+        + "\n\t- " + filename_config \
+        + "\n\t- " + filename_bonds;
+
 
 if __name__ == "__main__":
     main()

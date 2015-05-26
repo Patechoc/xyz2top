@@ -10,21 +10,20 @@ class check_generated_topology_files(unittest.TestCase):
         self.path_to_XYZ_format = "../files/histidine.xyz"
         self.histidine_moleculeObject = xyz.parse_XYZ(self.path_to_XYZ_format)
         self.histidine_topologyObject = topology.topology(self.histidine_moleculeObject)
+        self.histidine_topologyObject.build_topology()
         [self.filename_config, self.filename_bonds] = self.histidine_topologyObject.get_topology_files()
         self.path_to_stored_files = "./files/"
 
     def test_compare_topology_configFile(self):
-        #with open(self.path_to_stored_files + self.filename_config, 'r') as f_stored:
-        #    with open('./'+self.filename_config, 'r') as f_generated:
-        #print "self.path_to_stored_files: ", self.path_to_stored_files
-        #print "self.filename_config: ", self.filename_config
-        res = filecmp.cmp(self.path_to_stored_files+self.filename_config, "./"+self.filename_config)
+        res = filecmp.cmp(self.path_to_stored_files+self.filename_config,
+                          "./"+self.filename_config)
         self.assertTrue(res)
 
-    # def test_compare_topology_covBondDistFile(self):
-    #     with open(self.path_to_stored_files + self.filename_bonds, 'r') as f_stored:
-    #         with open('./' + self.filename_bonds, 'r') as f_generated:
-    #             filecmp.cmp(f_stored, f_generated)
+    def test_compare_topology_covBondDistFile(self):
+        res = filecmp.cmp(self.path_to_stored_files+self.filename_bonds,
+                          "./"+self.filename_bonds)
+        self.assertTrue(res)
+
 
 class compared_topology_of_Histidine_with_known_results_from_Avogadro(unittest.TestCase):
     def setUp(self):
