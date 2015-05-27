@@ -296,37 +296,40 @@ class topology(object):
         ordered_list = sorted(list_triples)
         ordered_list.insert(0, ["uniqueID", "index_i", "index_j","index_k",
                                 "covBondDist IJ [A]", "covBondDist JK [A]",
-                                "Angle IJK [radians]",
-                                "Angle IJK [degrees]"])
+                                "Angle IJK [rad]",
+                                "Angle IJK [deg]"])
         out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(22, ' ')) for elem in triple]) for triple in ordered_list])
         return out
 
     def order_dihedralAngles(self):
         out = ""
-        list_quad = []
+        list_quads = []
         # build list of unique IDs to order dihedral angles between 3 covalent bonds
-        # for ind,quad in enumerate(self.covalentBondAngles):
-        #     [i,k] = sorted([quad.atomEntity_i.atomIndex, quad.atomEntity_k.atomIndex])
-        #     j = quad.atomEntity_j.atomIndex
-        #     id = i * self.molecule.nbAtomsInMolecule**2 + j*self.molecule.nbAtomsInMolecule + k
-        #     list_quads.append([id, i, j, k,
-        #                          quad.distance_ji, quad.distance_jk,
-        #                          quad.get_angle(inDegree=False),
-        #                          quad.get_angle(inDegree=True)])
-        # # order quads by their IDs
-        # ordered_list = sorted(list_quads)
-        # ordered_list.insert(0, ["uniqueID", "index_i", "index_j","index_k",
-        #                         "covBondDist IJ [A]", "covBondDist JK [A]",
-        #                         "Angle IJK [radians]",
-        #                         "Angle IJK [degrees]"])
-        # out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(22, ' ')) for elem in quad]) for quad in ordered_list])
+        for ind, quad in enumerate(self.covalentDihedralAngles):
+            i = quad.atomEntity_i.atomIndex
+            j = quad.atomEntity_j.atomIndex
+            k = quad.atomEntity_k.atomIndex
+            l = quad.atomEntity_l.atomIndex
+            id = i * self.molecule.nbAtomsInMolecule**3 \
+            + j*self.molecule.nbAtomsInMolecule**2 \
+            + k*self.molecule.nbAtomsInMolecule \
+            + l
+            list_quads.append([id, i, j, k, l,
+                               quad.get_dihedral_angle(inDegree=False),
+                               quad.get_dihedral_angle(inDegree=True)])
+        # order quads by their IDs
+        ordered_list = sorted(list_quads)
+        ordered_list.insert(0, ["uniqueID", "index_i", "index_j", "index_k", "index_l",
+                                "Dihedral IJ-KL [rad]",
+                                "Dihedral IJ-KL [deg]"])
+        out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(22, ' ')) for elem in quad]) for quad in ordered_list])
         return out
-
 
     def get_topology_files(self, prefix = ""):
         filename_config = "configTopology.txt"
         filename_bonds  = "covBondDist.csv"
         filename_angles = "covAngles.csv"
+        filename_dihedralAngles = "covDihedralAngles.csv"
         if prefix == "":
             prefix = self.molecule.shortname
         filename_config = prefix + "_" + filename_config

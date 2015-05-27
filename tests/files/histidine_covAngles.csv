@@ -1,4 +1,4 @@
-uniqueID,             index_i,              index_j,              index_k,              covBondDist IJ [A],   covBondDist JK [A],   Angle IJK [radians],  Angle IJK [degrees],  
+uniqueID,             index_i,              index_j,              index_k,              covBondDist IJ [A],   covBondDist JK [A],   Angle IJK [rad],      Angle IJK [deg],      
 249,                  0,                    12,                   9,                    1.09828296923,        1.54174639419,        1.86931493631,        107.103856431,        
 253,                  0,                    12,                   13,                   1.09828296923,        1.55799266763,        1.89728640647,        108.706503619,        
 255,                  0,                    12,                   15,                   1.09828296923,        1.47406123312,        1.96207863168,        112.418824668,        
