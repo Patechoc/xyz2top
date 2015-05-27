@@ -301,6 +301,27 @@ class topology(object):
         out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(22, ' ')) for elem in triple]) for triple in ordered_list])
         return out
 
+    def order_dihedralAngles(self):
+        out = ""
+        list_quad = []
+        # build list of unique IDs to order dihedral angles between 3 covalent bonds
+        # for ind,quad in enumerate(self.covalentBondAngles):
+        #     [i,k] = sorted([quad.atomEntity_i.atomIndex, quad.atomEntity_k.atomIndex])
+        #     j = quad.atomEntity_j.atomIndex
+        #     id = i * self.molecule.nbAtomsInMolecule**2 + j*self.molecule.nbAtomsInMolecule + k
+        #     list_quads.append([id, i, j, k,
+        #                          quad.distance_ji, quad.distance_jk,
+        #                          quad.get_angle(inDegree=False),
+        #                          quad.get_angle(inDegree=True)])
+        # # order quads by their IDs
+        # ordered_list = sorted(list_quads)
+        # ordered_list.insert(0, ["uniqueID", "index_i", "index_j","index_k",
+        #                         "covBondDist IJ [A]", "covBondDist JK [A]",
+        #                         "Angle IJK [radians]",
+        #                         "Angle IJK [degrees]"])
+        # out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(22, ' ')) for elem in quad]) for quad in ordered_list])
+        return out
+
 
     def get_topology_files(self, prefix = ""):
         filename_config = "configTopology.txt"
@@ -311,6 +332,7 @@ class topology(object):
         filename_config = prefix + "_" + filename_config
         filename_bonds  = prefix + "_" + filename_bonds
         filename_angles = prefix + "_" + filename_angles
+        filename_dihedralAngles = prefix + "_" + filename_dihedralAngles
 
         # config. file with arbitrary choice of covalent radius coefficient
         # (defining if an atom pair is a covalent bond)
@@ -326,7 +348,10 @@ class topology(object):
         with open(filename_angles, 'w') as outfile:
             outfile.write(str_angles)
         # dihedrals angles between bonds
-        return [filename_config, filename_bonds, filename_angles]
+        str_dihedral = self.order_dihedralAngles()
+        with open(filename_dihedralAngles, 'w') as outfile:
+            outfile.write(str_dihedral)
+        return [filename_config, filename_bonds, filename_angles, filename_dihedralAngles]
 
     def get_as_Zmatrix(self, useVariables=False):
         atomIndicesWritten = []
@@ -407,11 +432,12 @@ def main():
     print molecular_topology.get_as_Zmatrix(useVariables=True)
 
     print  "\nCreate 3 topology files for bonds, angles and dihedrals + config.txt"
-    [filename_config, filename_bonds, filename_angles] = molecular_topology.get_topology_files()
+    [filename_config, filename_bonds, filename_angles, filename_dihedralAngles] = molecular_topology.get_topology_files()
     print "files generated:" \
         + "\n\t- " + filename_config \
         + "\n\t- " + filename_bonds \
-        + "\n\t- " + filename_angles;
+        + "\n\t- " + filename_angles \
+        + "\n\t- " + filename_dihedralAngles;
 
 
 if __name__ == "__main__":
