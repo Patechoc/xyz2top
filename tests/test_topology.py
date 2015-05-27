@@ -24,6 +24,10 @@ class check_generated_topology_files(unittest.TestCase):
                           "./"+self.filename_bonds)
         self.assertTrue(res)
 
+    def test_compare_topology_covBondAngles(self):
+        res = filecmp.cmp(self.path_to_stored_files+self.filename_angles,
+                          "./"+self.filename_angles)
+        self.assertTrue(res)
 
 class compared_topology_of_Histidine_with_known_results_from_Avogadro(unittest.TestCase):
     def setUp(self):
