@@ -280,14 +280,37 @@ class topology(object):
         out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(20, ' ')) for elem in pair]) for pair in ordered_list])
         return out
 
+    def order_angles(self):
+        out = ""
+        list_triples = []
+        # build list of unique IDs to order angles between covalent bonds
+        for ind,triple in enumerate(self.covalentBondAngles):
+            [i,k] = sorted([triple.atomEntity_i.atomIndex, triple.atomEntity_k.atomIndex])
+            j = triple.atomEntity_j.atomIndex
+            id = i * self.molecule.nbAtomsInMolecule**2 + j*self.molecule.nbAtomsInMolecule + k
+            list_triples.append([id, i, j, k,
+                                 triple.distance_ji, triple.distance_jk,
+                                 triple.get_angle(inDegree=False),
+                                 triple.get_angle(inDegree=True)])
+        # order triples by their IDs
+        ordered_list = sorted(list_triples)
+        ordered_list.insert(0, ["uniqueID", "index_i", "index_j","index_k",
+                                "covBondDist IJ [A]", "covBondDist JK [A]",
+                                "Angle IJK [radians]",
+                                "Angle IJK [degrees]"])
+        out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(22, ' ')) for elem in triple]) for triple in ordered_list])
+        return out
+
 
     def get_topology_files(self, prefix = ""):
         filename_config = "configTopology.txt"
         filename_bonds  = "covBondDist.csv"
+        filename_angles = "covAngles.csv"
         if prefix == "":
             prefix = self.molecule.shortname
         filename_config = prefix + "_" + filename_config
         filename_bonds  = prefix + "_" + filename_bonds
+        filename_angles = prefix + "_" + filename_angles
 
         # config. file with arbitrary choice of covalent radius coefficient
         # (defining if an atom pair is a covalent bond)
@@ -299,8 +322,11 @@ class topology(object):
         with open(filename_bonds, 'w') as outfile:
             outfile.write(str_bonds)
         # angles between bonds
+        str_angles = self.order_angles()
+        with open(filename_angles, 'w') as outfile:
+            outfile.write(str_angles)
         # dihedrals angles between bonds
-        return [filename_config, filename_bonds]
+        return [filename_config, filename_bonds, filename_angles]
 
     def get_as_Zmatrix(self, useVariables=False):
         atomIndicesWritten = []
@@ -381,10 +407,11 @@ def main():
     print molecular_topology.get_as_Zmatrix(useVariables=True)
 
     print  "\nCreate 3 topology files for bonds, angles and dihedrals + config.txt"
-    [filename_config, filename_bonds] = molecular_topology.get_topology_files()
+    [filename_config, filename_bonds, filename_angles] = molecular_topology.get_topology_files()
     print "files generated:" \
         + "\n\t- " + filename_config \
-        + "\n\t- " + filename_bonds;
+        + "\n\t- " + filename_bonds \
+        + "\n\t- " + filename_angles;
 
 
 if __name__ == "__main__":
