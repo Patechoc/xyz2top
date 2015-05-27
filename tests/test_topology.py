@@ -11,7 +11,7 @@ class check_generated_topology_files(unittest.TestCase):
         self.histidine_moleculeObject = xyz.parse_XYZ(self.path_to_XYZ_format)
         self.histidine_topologyObject = topology.topology(self.histidine_moleculeObject)
         self.histidine_topologyObject.build_topology()
-        [self.filename_config, self.filename_bonds, self.filename_angles, self.filename_dihedralAngles] = self.histidine_topologyObject.get_topology_files()
+        [self.filename_config, self.filename_bonds, self.filename_angles, self.filename_dihedralAngles] = self.histidine_topologyObject.write_topology_files()
         self.path_to_stored_files = "./files/"
 
     def test_compare_topology_configFile(self):
