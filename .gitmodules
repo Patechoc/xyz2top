@@ -1,0 +1,3 @@
+[submodule "lib/atomsinmolecule"]
+	path = lib/atomsinmolecule
+	url = https://patrick_merlot@bitbucket.org/patrick_merlot/atomsinmolecule.git
