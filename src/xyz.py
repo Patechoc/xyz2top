@@ -2,7 +2,8 @@
 
 import sys, os
 import parser as prs
-import atomInMolecule as mol
+#import atomInMolecule as mol
+import atomsInMolecule as mol
 
 
 
