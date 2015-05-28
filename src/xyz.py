@@ -3,8 +3,8 @@
 import sys, os
 import parser as prs
 import imp
-mol = imp.load_source("atomsInMolecule", "../lib/atomsinmolecule/atomsInMolecule/atomsInMolecule.py")
-
+mol = imp.load_source("atomsinmolecule", "../lib/atomsinmolecule/atomsInMolecule/")
+#from ..lib.atomsinmolecule import atomsInMolecule
 
 def parse_XYZ(path_to_file):
     stringXYZ = ""

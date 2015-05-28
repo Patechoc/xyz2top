@@ -150,6 +150,7 @@ class topology(object):
         self.covalentBonds = [] # contains only atomPairs detected as connected
         self.covalentBondAngles = []
         self.covalentDihedralAngles = []
+        self.build_topology()
     def get_object(self):
         obj = {}
         obj["molecule"] = self.molecule.get_object()
@@ -254,9 +255,12 @@ class topology(object):
                     #    print atomQuadruple(atomI,atomJ,atomK,atomL)
 
     def build_topology(self):
-        self.get_covalentBonds()
-        self.get_covalentBondAngles()
-        self.get_covalentDihedralAngles()
+        if self.covalentBonds == []:
+            self.get_covalentBonds()
+            self.get_covalentBondAngles()
+            self.get_covalentDihedralAngles()
+        else:
+            print "The topology has already been built and has detected some covalent bonds"
 
     def get_as_JSON(self):
         topo = self.get_object()
