@@ -2,8 +2,8 @@
 
 import sys, os
 import parser as prs
-import atomsInMolecule as mol
-
+import imp
+mol = imp.load_source("atomsInMolecule", "../lib/atomsinmolecule/atomsInMolecule/atomsInMolecule.py")
 
 
 def parse_XYZ(path_to_file):
