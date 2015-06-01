@@ -56,11 +56,7 @@ build:
           pip install -e .
 
     - script:
-        name: Tests in all below test directories
+        name: TESTING
         code: |
-          py.test xyz2top
-
-    - script:
-        name: Inlined test dirs
-        code: |
-          py.test tests/test_main.py
+          cd tests
+          py.test -v
