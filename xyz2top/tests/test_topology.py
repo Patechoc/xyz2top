@@ -7,7 +7,7 @@ import filecmp
 
 class check_generated_topology_files(unittest.TestCase):
     def setUp(self):
-        self.path_to_XYZ_format = "../files/histidine.xyz"
+        self.path_to_XYZ_format = "../../files/histidine.xyz"
         self.histidine_moleculeObject = xyz.parse_XYZ(self.path_to_XYZ_format)
         self.histidine_topologyObject = topology.topology(self.histidine_moleculeObject)
         self.histidine_topologyObject.build_topology()
@@ -36,7 +36,7 @@ class check_generated_topology_files(unittest.TestCase):
 
 class compared_topology_of_Histidine_with_known_results_from_Avogadro(unittest.TestCase):
     def setUp(self):
-        self.path_to_XYZ_format = "../files/histidine.xyz"
+        self.path_to_XYZ_format = "../../files/histidine.xyz"
         self.maxDiff = None
         self.histidine_moleculeObject = xyz.parse_XYZ(self.path_to_XYZ_format)
         self.histidine_topologyObject = topology.topology(self.histidine_moleculeObject)
