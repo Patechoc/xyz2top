@@ -19,6 +19,8 @@ build:
           pip install --upgrade pip
           pip install pytest
           python setup.py install
+          git submodule init
+          git submodule update
 
     # A step that executes `pip install` command.
     - pip-install
@@ -34,8 +36,11 @@ build:
         code: |
           xyzPATH=$(pwd)
           echo "Initiating Python path to: $xyzPATH"
-          export PYTHONPATH=$xyzPATH
-          export PYTHONPATH=$PYTHONPATH:${xyzPATH}/src
+          PYTHONPATH=$xyzPATH
+          PYTHONPATH=$PYTHONPATH:${xyzPATH}/src
+          PYTHONPATH=$PYTHONPATH:${xyzPATH}/lib
+          PYTHONPATH=$PYTHONPATH:${xyzPATH}/lib/atomsinmolecule
+          export PYTHONPATH
           echo "PYTHONPATH: $PYTHONPATH"
 
     - script:
