@@ -58,5 +58,5 @@ build:
     - script:
         name: TESTING
         code: |
-          cd tests
+          cd xyz2top/tests
           py.test -v
