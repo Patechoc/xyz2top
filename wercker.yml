@@ -41,10 +41,11 @@ build:
           if [ ! -z "$PYTHONPATH" -a "$PYTHONPATH" != " " ]; then PYTHONPATH=$PYTHONPATH:${xyzPATH};else PYTHONPATH=${xyzPATH}; fi
           PYTHONPATH=$PYTHONPATH:${xyzPATH}/xyz2top/src
           ls ${xyzPATH}/xyz2top/src
-          PYTHONPATH=$PYTHONPATH:${xyzPATH}/xyz2top/lib
-          ls ${xyzPATH}/xyz2top/lib
-          PYTHONPATH=$PYTHONPATH:${xyzPATH}/xyz2top/lib/atomsinmolecule
-          ls ${xyzPATH}/xyz2top/lib/atomsinmolecule
+          PYTHONPATH=$PYTHONPATH:${xyzPATH}/lib
+          ls ${xyzPATH}/lib
+          ls ${xyzPATH}/lib/atomsinmolecule
+          PYTHONPATH=$PYTHONPATH:${xyzPATH}/lib/atomsinmolecule
+          ls ${xyzPATH}/lib/atomsinmolecule
           export PYTHONPATH
           echo "PYTHONPATH: $PYTHONPATH"
 
