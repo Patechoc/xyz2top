@@ -10,7 +10,7 @@ class check_generated_topology_files(unittest.TestCase):
         self.path_to_XYZ_format = "../../files/histidine.xyz"
         self.histidine_moleculeObject = xyz.parse_XYZ(self.path_to_XYZ_format)
         self.histidine_topologyObject = topology.topology(self.histidine_moleculeObject)
-        self.histidine_topologyObject.build_topology()
+        #self.histidine_topologyObject.build_topology()
         [self.filename_config, self.filename_bonds, self.filename_angles, self.filename_dihedralAngles] = self.histidine_topologyObject.write_topology_files()
         self.path_to_stored_files = "./files/"
 
@@ -29,7 +29,9 @@ class check_generated_topology_files(unittest.TestCase):
                           "./"+self.filename_angles)
         self.assertTrue(res)
 
-    def test_compare_topology_covBondDihedralAngles(self):
+    def test_compare_topology_(self):
+        print "file 1:", self.path_to_stored_files+self.filename_dihedralAngles
+        print "file 2:", self.filename_dihedralAngles
         res = filecmp.cmp(self.path_to_stored_files+self.filename_dihedralAngles,
                           "./"+self.filename_dihedralAngles)
         self.assertTrue(res)
@@ -78,8 +80,8 @@ class compared_topology_of_Histidine_with_known_results_from_Avogadro(unittest.T
 
     def test_some_dihedral_angles_against_AVOGADRO_results(self):
         # Histidine topology computed from XYZ input
-        with open(self.path_to_XYZ_format, 'r') as f:
-            self.histidine_topologyObject.build_topology()
+        #with open(self.path_to_XYZ_format, 'r') as f:
+        #    self.histidine_topologyObject.build_topology()
         # check Dihedral H2-O2-C1-O1 (AVOGADRO) against H1-O19-C9-O18 (this module)
         dihedral_Avogadro = -179.8814
         dihedral_xyz2top  = [elem.get_dihedral_angle() for elem in self.histidine_topologyObject.covalentDihedralAngles if elem.atomEntity_i.atomIndex == 18 and elem.atomEntity_j.atomIndex == 9 and elem.atomEntity_k.atomIndex == 19 and elem.atomEntity_l.atomIndex == 1 ][0]

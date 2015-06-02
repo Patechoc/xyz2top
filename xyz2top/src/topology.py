@@ -150,10 +150,10 @@ class topology(object):
         self.covalentBonds = [] # contains only atomPairs detected as connected
         self.covalentBondAngles = []
         self.covalentDihedralAngles = []
-        self.build_topology()
         self.covBonds_built = False
         self.covBondAngles_built = False
         self.covBondDihedrals_built = False
+        self.build_topology()
     def get_object(self):
         obj = {}
         obj["molecule"] = self.molecule.get_object()
@@ -237,7 +237,7 @@ class topology(object):
             print "Covalent bond angles have already been found!"
 
     def get_covalentDihedralAngles(self):
-        if (self.covBondDihedrals_built):
+        if not(self.covBondDihedrals_built):
             ### reduce the search to the bonding atoms that have 'at least' 2 neighbours each
             indicesPairsWithEnoughNeighbours = []
             for indPair,pair in enumerate(self.covalentBonds):
