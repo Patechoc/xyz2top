@@ -10,8 +10,8 @@ parametrize = pytest.mark.parametrize
 
 #from xyz2top import metadata
 import metadata
-#from xyz2top.main import main
-from main import main
+from xyz2top.main import main
+#from main import main
 
 
 class TestMain(object):

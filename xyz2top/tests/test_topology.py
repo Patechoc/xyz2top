@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import unittest
-from xyz2top.xyz2top import topology
-from xyz2top.xyz2top import xyz
+import topology
+import xyz
 import filecmp
 
 class check_generated_topology_files(unittest.TestCase):
