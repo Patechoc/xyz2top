@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-from xyz2top import xyz
+from xyz2top.xyz2top import xyz
 
 
 class read_xyz_format(unittest.TestCase):
