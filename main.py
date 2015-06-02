@@ -7,7 +7,8 @@ from __future__ import print_function
 import argparse
 import sys
 
-from xyz2top import metadata
+#from xyz2top import metadata
+import metadata
 
 
 def main(argv):
