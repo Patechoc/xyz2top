@@ -151,6 +151,9 @@ class topology(object):
         self.covalentBondAngles = []
         self.covalentDihedralAngles = []
         self.build_topology()
+        self.covBonds_built = False
+        self.covBondAngles_built = False
+        self.covBondDihedrals_built = False
     def get_object(self):
         obj = {}
         obj["molecule"] = self.molecule.get_object()
@@ -203,64 +206,73 @@ class topology(object):
         #print pair.get_object()
 
     def get_covalentBonds(self):
-        # go through all unique pairs of atoms
-        # compare distance to covalent bond distance (scaled)
-        [[self.add_covalentBond(ai, aj, i, j) for j, aj in enumerate(self.molecule.listAtoms) if j>i] for i, ai in enumerate(self.molecule.listAtoms[:-1])]
-        #print "Nb. of total unique pair of atoms: ",len(self.atomicPairs)
-        #print "Nb. of covalent bond detected: ",len(self.covalentBonds)
+        if not(self.covBonds_built):
+            # go through all unique pairs of atoms
+            # compare distance to covalent bond distance (scaled)
+            [[self.add_covalentBond(ai, aj, i, j) for j, aj in enumerate(self.molecule.listAtoms) if j>i] for i, ai in enumerate(self.molecule.listAtoms[:-1])]
+            #print "Nb. of total unique pair of atoms: ",len(self.atomicPairs)
+            #print "Nb. of covalent bond detected: ",len(self.covalentBonds)
+            self.covBonds_built = True
+        else:
+            print "Covalent bonds have already been found!"
 
     def get_covalentBondAngles(self):
-        # reduce the search to the atoms that have 'at least' 2 neighbours
-        indicesAtomsWithEnoughBonds =[j for j,aj in enumerate(self.atomEntities)
-                                      if len(self.get_atomEntity_by_index(j).neighbourIndices) > 1]
-        for j in indicesAtomsWithEnoughBonds:
-            for i in self.get_indices_neighbouringAtoms(j):
-                for k in self.get_indices_neighbouringAtoms(j):
-                    if k>i:
-                        ai = self.get_atomEntity_by_index(i)
-                        aj = self.get_atomEntity_by_index(j)
-                        ak = self.get_atomEntity_by_index(k)
-                        self.covalentBondAngles.append(atomTriple(ai,aj,ak))
-                        #print  atomTriple(ai,aj,ak)
-                        #if aj.atomInfos.atomSymbol == "C" and j==9:
-                        #    print atomTriple(ai,aj,ak)
+        if not(self.covBondAngles_built):
+            # reduce the search to the atoms that have 'at least' 2 neighbours
+            indicesAtomsWithEnoughBonds =[j for j,aj in enumerate(self.atomEntities)
+                                          if len(self.get_atomEntity_by_index(j).neighbourIndices) > 1]
+            for j in indicesAtomsWithEnoughBonds:
+                for i in self.get_indices_neighbouringAtoms(j):
+                    for k in self.get_indices_neighbouringAtoms(j):
+                        if k>i:
+                            ai = self.get_atomEntity_by_index(i)
+                            aj = self.get_atomEntity_by_index(j)
+                            ak = self.get_atomEntity_by_index(k)
+                            self.covalentBondAngles.append(atomTriple(ai,aj,ak))
+                            #print  atomTriple(ai,aj,ak)
+                            #if aj.atomInfos.atomSymbol == "C" and j==9:
+                            #    print atomTriple(ai,aj,ak)
+            self.covBondAngles_built = True
+        else:
+            print "Covalent bond angles have already been found!"
 
     def get_covalentDihedralAngles(self):
-        ### reduce the search to the bonding atoms that have 'at least' 2 neighbours each
-        indicesPairsWithEnoughNeighbours = []
-        for indPair,pair in enumerate(self.covalentBonds):
-            #print "index of the pair: ", indPair
-            #print atomPair(self.get_atomEntity_by_index(pair.atomEntity_i.atomIndex),\
-            #self.get_atomEntity_by_index(pair.atomEntity_j.atomIndex))
-            indicesNeighboursAtom2 = self.get_indices_neighbouringAtoms(pair.atomEntity_i.atomIndex)
-            indicesNeighboursAtom3 = self.get_indices_neighbouringAtoms(pair.atomEntity_j.atomIndex)
-            if len(indicesNeighboursAtom2)>1 and len(indicesNeighboursAtom3)>1:
-                indicesPairsWithEnoughNeighbours.append(indPair)
-        ### for each such bond, find all possible plans to compare and get dihedral angles
-        for indPair in indicesPairsWithEnoughNeighbours:
-            pairJK = self.covalentBonds[indPair]
-            j = pairJK.atomEntity_i.atomIndex
-            k = pairJK.atomEntity_j.atomIndex
-            atomJ  = self.get_atomEntity_by_index(j)
-            atomK  = self.get_atomEntity_by_index(k)
-            indicesAtom1 = [i for i in self.get_indices_neighbouringAtoms(j) if i!=k]
-            indicesAtom4 = [l for l in self.get_indices_neighbouringAtoms(k) if l!=j]
-            for i in indicesAtom1:
-                atomI = self.get_atomEntity_by_index(i)
-                for l in indicesAtom4:
-                    atomL = self.get_atomEntity_by_index(l)
-                    self.covalentDihedralAngles.append(atomQuadruple(atomI,atomJ,atomK,atomL))
-                    #print atomQuadruple(atomI,atomJ,atomK,atomL)
-                    #if atomJ.atomInfos.atomSymbol == "C" and j==9 and k==19:
-                    #    print atomQuadruple(atomI,atomJ,atomK,atomL)
+        if (self.covBondDihedrals_built):
+            ### reduce the search to the bonding atoms that have 'at least' 2 neighbours each
+            indicesPairsWithEnoughNeighbours = []
+            for indPair,pair in enumerate(self.covalentBonds):
+                #print "index of the pair: ", indPair
+                #print atomPair(self.get_atomEntity_by_index(pair.atomEntity_i.atomIndex),\
+                #self.get_atomEntity_by_index(pair.atomEntity_j.atomIndex))
+                indicesNeighboursAtom2 = self.get_indices_neighbouringAtoms(pair.atomEntity_i.atomIndex)
+                indicesNeighboursAtom3 = self.get_indices_neighbouringAtoms(pair.atomEntity_j.atomIndex)
+                if len(indicesNeighboursAtom2)>1 and len(indicesNeighboursAtom3)>1:
+                    indicesPairsWithEnoughNeighbours.append(indPair)
+            ### for each such bond, find all possible plans to compare and get dihedral angles
+            for indPair in indicesPairsWithEnoughNeighbours:
+                pairJK = self.covalentBonds[indPair]
+                j = pairJK.atomEntity_i.atomIndex
+                k = pairJK.atomEntity_j.atomIndex
+                atomJ  = self.get_atomEntity_by_index(j)
+                atomK  = self.get_atomEntity_by_index(k)
+                indicesAtom1 = [i for i in self.get_indices_neighbouringAtoms(j) if i!=k]
+                indicesAtom4 = [l for l in self.get_indices_neighbouringAtoms(k) if l!=j]
+                for i in indicesAtom1:
+                    atomI = self.get_atomEntity_by_index(i)
+                    for l in indicesAtom4:
+                        atomL = self.get_atomEntity_by_index(l)
+                        self.covalentDihedralAngles.append(atomQuadruple(atomI,atomJ,atomK,atomL))
+                        #print atomQuadruple(atomI,atomJ,atomK,atomL)
+                        #if atomJ.atomInfos.atomSymbol == "C" and j==9 and k==19:
+                        #    print atomQuadruple(atomI,atomJ,atomK,atomL)
+            self.covBondDihedrals_built = True
+        else:
+            print "Dihedral angles have already been found!"
 
     def build_topology(self):
-        if self.covalentBonds == []:
-            self.get_covalentBonds()
-            self.get_covalentBondAngles()
-            self.get_covalentDihedralAngles()
-        else:
-            print "The topology has already been built and has detected some covalent bonds"
+        self.get_covalentBonds()
+        self.get_covalentBondAngles()
+        self.get_covalentDihedralAngles()
 
     def get_as_JSON(self):
         topo = self.get_object()
