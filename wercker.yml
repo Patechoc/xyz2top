@@ -18,6 +18,7 @@ build:
         code: |
           pip install --upgrade pip
           pip install pytest
+          pip install -r requirements-dev.txt
           python setup.py install
           git submodule init
           git submodule update
