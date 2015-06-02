@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Topology From Geometry In XYZ Format"""
 
-from xyz2top import metadata
+import metadata
 
 
 __version__ = metadata.version
