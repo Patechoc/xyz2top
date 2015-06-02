@@ -38,7 +38,7 @@ build:
           xyzPATH=$(pwd)
           ls ${xyzPATH}
           echo "Initiating Python path to: $xyzPATH"
-          echo `if [ ! -z "$PYTHONPATH" -a "$PYTHONPATH" != " " ]; then PYTHONPATH=$PYTHONPATH:${xyzPATH};else PYTHONPATH=${xyzPATH}; fi`
+          if [ ! -z "$PYTHONPATH" -a "$PYTHONPATH" != " " ]; then PYTHONPATH=$PYTHONPATH:${xyzPATH};else PYTHONPATH=${xyzPATH}; fi
           PYTHONPATH=$PYTHONPATH:${xyzPATH}/src
           ls ${xyzPATH}/src
           PYTHONPATH=$PYTHONPATH:${xyzPATH}/lib
