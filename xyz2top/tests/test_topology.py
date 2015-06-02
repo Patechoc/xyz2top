@@ -2,7 +2,7 @@
 
 import unittest
 import topology
-import xyz
+from xyz2top import xyz
 import filecmp
 
 class check_generated_topology_files(unittest.TestCase):
