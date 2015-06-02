@@ -412,30 +412,6 @@ def get_interatomic_distance(atomInfos_i,atomInfos_j):
                       +(atomInfos_i.yCoord-atomInfos_j.yCoord)**2
                       +(atomInfos_i.zCoord-atomInfos_j.zCoord)**2)
 
-def compare_topologies_from_files(filepath1, prefix1, filepath2, prefix2):
-        covRadFactor = -1.
-        list_pairs = []
-        list_triples = []
-        list_quads = []
-        # check that the topologies used the same configuration (= same covRadFactor)
-        config_topo = {"covRadFactor":covRadFactor}
-        # compare the number of covalent bonds
-        # for identical covalent bonds, provides stats (ErrorMaxAbs, ErrorMean, ErrorStd, ErrorRMS)
-        error_bonds ={}
-
-        # compare the number of angles between covalent bonds
-        # for identical angles btw bonds, provides stats (ErrorMaxAbs, ErrorMean, ErrorStd, ErrorRMS)
-        error_angles ={}
-
-        # compare the number of dihedral angles between 3 covalent bonds
-        # for identical dihedrals btw 3 bonds, provides stats (ErrorMaxAbs, ErrorMean, ErrorStd, ErrorRMS)
-        error_dihedrals ={}
-
-        errors = {"config_topo":config_topo,
-                  "error_bonds":error_bonds,
-                  "error_angles":error_angles,
-                  "error_dihedrals":error_dihedrals}
-        return errors
 
 def main():
     # read inputs
