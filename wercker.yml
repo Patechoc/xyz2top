@@ -23,7 +23,7 @@ build:
           git submodule update
 
     # A step that executes `pip install` command.
-    - pip-install
+    # - pip-install
 
     # # This pip-install clears the local wheel cache
     # - pip-install:
@@ -36,7 +36,7 @@ build:
         code: |
           xyzPATH=$(pwd)
           echo "Initiating Python path to: $xyzPATH"
-          PYTHONPATH=$xyzPATH
+          PYTHONPATH=$PYTHONPATH:${xyzPATH}
           PYTHONPATH=$PYTHONPATH:${xyzPATH}/src
           PYTHONPATH=$PYTHONPATH:${xyzPATH}/lib
           PYTHONPATH=$PYTHONPATH:${xyzPATH}/lib/atomsinmolecule
