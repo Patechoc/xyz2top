@@ -75,9 +75,9 @@ def comparison_requirements(molecule1, molecule2):
 
 def read_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("mol1.xyz",
+    parser.add_argument("file_mol1",
                         help="First molecular geometry in .XYZ format.")
-    parser.add_argument("mol2.xyz",
+    parser.add_argument("file_mol2",
                         help="Second molecular geometry in .XYZ format.")
     parser.add_argument('-out', nargs='?', type=argparse.FileType('w'),
                         default=sys.stdout,
@@ -120,7 +120,8 @@ def read_arguments():
 def main():
     # read inputs
     args = read_arguments()
-#     path_to_file = os.path.abspath(args.filename)
+    path_to_file1 = os.path.abspath(args.file_mol1)
+    path_to_file2 = os.path.abspath(args.file_mol2)
 #     if (args.covRadFactor == None):
 #         print "no factor for bond distance specified\n>> default covalent radius factor will apply.\n(Run './main.py --help' for more options.)"
 #     else:
