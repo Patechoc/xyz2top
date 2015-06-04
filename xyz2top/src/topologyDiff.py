@@ -3,7 +3,6 @@
 import sys, os
 import argparse
 #import numpy as np
-#import xyz2molecule as xyz
 #import atomsinmolecule as mol
 import topology as topo
 import math
@@ -11,10 +10,11 @@ import math
 
 class topologyDiff(object):
     def __init__(self, molecule1, molecule2, covRadFactor=1.3):
+        errors = {}
         comparison_requirements(molecule1, molecule2)
         self.topology1 = topo.topology(molecule1, covRadFactor)
         self.topology2 = topo.topology(molecule2, covRadFactor)
-
+        
         # self.atomEntities = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
         # self.atomicPairs = [] # contains all atomPairs
         # self.covalentBonds = [] # contains only atomPairs detected as connected
@@ -54,22 +54,23 @@ class topologyDiff(object):
         return json.dumps(topo, sort_keys=True, indent=4)
 
 def comparison_requirements(molecule1, molecule2):
+    msg = ""
     ## the molecules should have the same atoms, provided in the same order
-    if self.molecule1.nbAtomsInMolecule != self.molecule2.nbAtomsInMolecule:
-        msg =  "Not the same number of atoms comparing {} and {}".format(self.molecule1.shortname, self.molecule2.shortname)
+    if molecule1.nbAtomsInMolecule != molecule2.nbAtomsInMolecule:
+        msg =  "Not the same number of atoms comparing:\n-{} and\n-{}".format(molecule1.shortname, molecule2.shortname)
         sys.exit(msg)
-    if self.molecule1.charge != self.molecule2.charge:
-        msg = "Not the same molecular charge comparing {} and {}".format(self.molecule1.shortname, self.molecule2.shortname)
+    if molecule1.charge != molecule2.charge:
+        msg = "Not the same molecular charge comparing:\n-{} and\n-{}".format(molecule1.shortname, molecule2.shortname)
     sys.exit(msg)
-    for atom1, atom2 in zip(self.molecule1.listAtoms, self.molecule2.listAtoms):
-        if self.atom1.atomSymbol != self.atom2.atomSymbol:
-            msg = "Not the same atom symbols: comparing {} and {}".format(str(atom1), str(atom2))
+    for atom1, atom2 in zip(molecule1.listAtoms, molecule2.listAtoms):
+        if atom1.atomSymbol != atom2.atomSymbol:
+            msg = "Not the same atom symbols: comparing:\n-{} and\n-{}".format(str(atom1), str(atom2))
             sys.exit(msg)
-        if self.atom1.atomCharge != self.atom2.atomCharge:
-            msg = "Not the same atom charge: comparing {} and {}".format(str(atom1), str(atom2))
+        if atom1.atomCharge != atom2.atomCharge:
+            msg = "Not the same atom charge: comparing:\n-{} and\n-{}".format(str(atom1), str(atom2))
             sys.exit(msg)
-        if self.atom1.unitDistance != self.atom2.unitDistance:
-            msg = "Not the same atom unitDistance: comparing {} and {}".format(str(atom1), str(atom2))
+        if atom1.unitDistance != atom2.unitDistance:
+            msg = "Not the same atom unitDistance: comparing:\n-{} and\n-{}".format(str(atom1), str(atom2))
             sys.exit(msg)
 
 
@@ -89,6 +90,11 @@ def read_arguments():
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="increase output verbosity")
     args = parser.parse_args()
+    import xyz2molecule as xyz
+    molecule1 = xyz.parse_XYZ(args.file_mol1)
+    molecule2 = xyz.parse_XYZ(args.file_mol2)
+    diff = topologyDiff(molecule1, molecule2, covRadFactor=1.3)
+    
     return args
 
 
