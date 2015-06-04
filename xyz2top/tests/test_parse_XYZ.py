@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-import xyz
+import xyz2molecule as xyz
 
 
 class read_xyz_format(unittest.TestCase):

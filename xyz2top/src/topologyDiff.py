@@ -3,7 +3,7 @@
 import sys, os
 import argparse
 #import numpy as np
-#import xyz
+#import xyz2molecule as xyz
 #import atomsinmolecule as mol
 import topology as topo
 import math
