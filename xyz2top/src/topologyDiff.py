@@ -22,7 +22,7 @@ class topologyDiff(object):
         self.orderedAngles2 = self.topology2.order_angles()
         self.orderedDihedral1 = self.topology1.order_dihedralAngles_string()
         self.orderedDihedral2 = self.topology2.order_dihedralAngles_string()
-        error_bonds  = self.compare_bonds()
+        error_bonds  = self.compare_bonds(percentLargest = 1)
         error_angles = self.compare_angles()
         # self.atomEntities = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
         # self.atomicPairs = [] # contains all atomPairs
@@ -34,7 +34,7 @@ class topologyDiff(object):
         # self.covBondDihedrals_built = False
         # self.build_topology()
 
-    def compare_bonds(self):
+    def compare_bonds(self, percentLargest = -1):
         indBondDistance = 4 ## assumed Angstrom
         # same nb. of bonds?
         if len(self.orderedBonds1) != len(self.orderedBonds2):
@@ -46,16 +46,16 @@ class topologyDiff(object):
         if len(self.orderedBonds1[1:]) != len(errors):
             msg =  "As many covalents bonds detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
-        percentLargest = 99 ## 10% largest bond length deviation
+        #percentLargest = -1 ## 10% largest bond length deviation
         stats = get_statistics(errors, percentLargest)
         if stats["ind_Nlargest"] != None:
             print "Largest bond distance error for pairs:"
             for bondIndex in stats["ind_Nlargest"]:
-                print "bondIndex: "+ str(bondIndex)
                 bondInfo1 = self.orderedBonds1[bondIndex+1]
                 bondInfo2 = self.orderedBonds2[bondIndex+1]
-                print bondInfo1
-                print bondInfo2
+                print "bondIndex: {}\n\t{}\n\t{}\n\t{}".format(str(bondIndex), 
+                                                               self.orderedBonds1[0],
+                                                               bondInfo1, bondInfo2)
                 indI = bondInfo1[1]
                 indJ = bondInfo1[2]
                 atomI1 = self.topology1.get_atomEntity_by_index(indI)
@@ -70,7 +70,7 @@ class topologyDiff(object):
                 print self.orderedBonds2[bondIndex+1]
                 print str(topo.atomPair(atomI2, atomJ2))
                 print "\n\n"
-            print "{}% of the largest bond deviations corresponds the following {} bonds out of {}:\n".format(percentLargest, len(stats["ind_Nlargest"]), len(errors))
+            print "{}% of the largest bond deviations corresponds to {} bonds out of {}\n".format(percentLargest, len(stats["ind_Nlargest"]), len(errors))
             #            print "Bonds molecule 1: "
             #            print self.orderedBonds1[31]
             print "Max. abs. error: "+ str(stats["maxAbsError"])
