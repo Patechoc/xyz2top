@@ -35,7 +35,6 @@ class topologyDiff(object):
         # self.build_topology()
 
     def compare_bonds(self):
-        error_bonds = {}
         indBondDistance = 4 ## assumed Angstrom
         # same nb. of bonds?
         if len(self.orderedBonds1) != len(self.orderedBonds2):
@@ -47,10 +46,37 @@ class topologyDiff(object):
         if len(self.orderedBonds1[1:]) != len(errors):
             msg =  "As many covalents bonds detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
+        percentLargest = 99 ## 10% largest bond length deviation
+        stats = get_statistics(errors, percentLargest)
+        if stats["ind_Nlargest"] != None:
+            print "Largest bond distance error for pairs:"
+            for bondIndex in stats["ind_Nlargest"]:
+                print "bondIndex: "+ str(bondIndex)
+                bondInfo1 = self.orderedBonds1[bondIndex+1]
+                bondInfo2 = self.orderedBonds2[bondIndex+1]
+                print bondInfo1
+                print bondInfo2
+                indI = bondInfo1[1]
+                indJ = bondInfo1[2]
+                atomI1 = self.topology1.get_atomEntity_by_index(indI)
+                atomJ1 = self.topology1.get_atomEntity_by_index(indJ)
+                atomI2 = self.topology2.get_atomEntity_by_index(indI)
+                atomJ2 = self.topology2.get_atomEntity_by_index(indJ)
+                print "Error: " + str(errors[bondIndex])
+                print "Molecule 1:"
+                print self.orderedBonds1[bondIndex+1]
+                print str(topo.atomPair(atomI1, atomJ1))
+                print "Molecule 2:"
+                print self.orderedBonds2[bondIndex+1]
+                print str(topo.atomPair(atomI2, atomJ2))
+                print "\n\n"
+            print "{}% of the largest bond deviations corresponds the following {} bonds out of {}:\n".format(percentLargest, len(stats["ind_Nlargest"]), len(errors))
+            #            print "Bonds molecule 1: "
+            #            print self.orderedBonds1[31]
+            print "Max. abs. error: "+ str(stats["maxAbsError"])
         return get_statistics(errors)
 
     def compare_angles(self, unit="Degree"):
-        error_angles = {}
         if unit.lower() == "radian":
             indDegree = 6
         else:
@@ -61,14 +87,12 @@ class topologyDiff(object):
             sys.exit(msg)
         ## error in angles (degree)  for each bond pair
         ## checking that the unique ID is the same, if not as many angles, exit with an error
-        print self.orderedAngles1[0]
-        print self.orderedAngles1[1][indDegree]
         errors = np.array([ (elem[0][indDegree] - elem[1][indDegree]) for elem in zip(self.orderedAngles1[1:], self.orderedAngles2[1:]) if elem[0][0] == elem[1][0]])
         if len(self.orderedAngles1[1:]) != len(errors):
             msg =  "As many covalents angles detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
-        print get_statistics(errors)
-        return get_statistics(errors)
+        stats = get_statistics(errors)
+        return stats
 
     def get_object(self):
         obj = {}
@@ -163,7 +187,7 @@ def read_arguments():
 #                   "error_dihedrals":error_dihedrals}
 #         return errors
 
-def get_statistics(data):
+def get_statistics(data, percentLargest=-1):
     stats = {}
     absData = np.absolute(data)
     mean = np.mean(data)
@@ -174,6 +198,15 @@ def get_statistics(data):
     stats["variance"] = variance
     stats["stdDev"]   = math.sqrt(variance)
     stats["rms"]      = math.sqrt(sum([x**2 for x in absData])/len(data))
+    stats["ind_Nlargest"] = None
+    ## indexes of the largest elements in the set. Assuming errors, look for absolute values
+    if percentLargest !=-1: # do not look for those largest elements
+        if percentLargest < 0 or percentLargest >100:
+            msg="the percentage of largest element to look for should be in the range [0-100]."
+            sys.exit(msg)
+        nbElem = math.floor(percentLargest* len(data)/100.)
+        ind_Nlargest = absData.argsort()[-1*nbElem:][::-1]
+        stats["ind_Nlargest"] = ind_Nlargest
     return stats
 
 def example():
