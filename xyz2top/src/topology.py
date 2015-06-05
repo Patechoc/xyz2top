@@ -293,6 +293,10 @@ class topology(object):
         # order pairs by their IDs
         ordered_list = sorted(list_pairs)
         ordered_list.insert(0, ["uniquePairID", "index_i", "index_j", "covBondDist [A]", "distance [A]"])
+        return ordered_list
+
+    def order_convalentBondDistances_string(self):
+        ordered_list = self.order_convalentBondDistances()
         out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(20, ' ')) for elem in pair]) for pair in ordered_list])
         return out
 
@@ -314,6 +318,10 @@ class topology(object):
                                 "covBondDist IJ [A]", "covBondDist JK [A]",
                                 "Angle IJK [rad]",
                                 "Angle IJK [deg]"])
+        return ordered_list
+
+    def order_angles_string(self):
+        ordered_list = self.order_angles()
         out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(22, ' ')) for elem in triple]) for triple in ordered_list])
         return out
 
@@ -338,6 +346,10 @@ class topology(object):
         ordered_list.insert(0, ["uniqueID", "index_i", "index_j", "index_k", "index_l",
                                 "Dihedral IJ-KL [rad]",
                                 "Dihedral IJ-KL [deg]"])
+        return ordered_list
+
+    def order_dihedralAngles_string(self):
+        ordered_list = self.order_dihedralAngles()
         out = "\n".join(["".join(["{0}".format("".join([str(elem), ","]).ljust(22, ' ')) for elem in quad]) for quad in ordered_list])
         return out
 
@@ -359,15 +371,15 @@ class topology(object):
         with open(filename_config, 'w') as outfile:
             outfile.write(config)
         # covalent bonds distances
-        str_bonds = self.order_convalentBondDistances()
+        str_bonds = self.order_convalentBondDistances_string()
         with open(filename_bonds, 'w') as outfile:
             outfile.write(str_bonds)
         # angles between bonds
-        str_angles = self.order_angles()
+        str_angles = self.order_angles_string()
         with open(filename_angles, 'w') as outfile:
             outfile.write(str_angles)
         # dihedrals angles between bonds
-        str_dihedral = self.order_dihedralAngles()
+        str_dihedral = self.order_dihedralAngles_string()
         with open(filename_dihedralAngles, 'w') as outfile:
             outfile.write(str_dihedral)
         return [filename_config, filename_bonds, filename_angles, filename_dihedralAngles]

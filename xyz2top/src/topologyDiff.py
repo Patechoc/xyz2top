@@ -2,7 +2,7 @@
 
 import sys, os
 import argparse
-#import numpy as np
+import numpy as np
 #import atomsinmolecule as mol
 import topology as topo
 import math
@@ -11,10 +11,18 @@ import math
 class topologyDiff(object):
     def __init__(self, molecule1, molecule2, covRadFactor=1.3):
         errors = {}
-        comparison_requirements(molecule1, molecule2)
+        requirements_for_comparison(molecule1, molecule2)
+        self.molecule1 = molecule1
+        self.molecule2 = molecule2
         self.topology1 = topo.topology(molecule1, covRadFactor)
         self.topology2 = topo.topology(molecule2, covRadFactor)
-        
+        self.orderedBonds1  = self.topology1.order_convalentBondDistances()
+        self.orderedBonds2  = self.topology2.order_convalentBondDistances()
+        self.orderedAngles1 = self.topology1.order_angles()
+        self.orderedAngles2 = self.topology2.order_angles()
+        self.orderedDihedral1 = self.topology1.order_dihedralAngles_string()
+        self.orderedDihedral2 = self.topology2.order_dihedralAngles_string()
+        error_bonds = self.compare_bonds()
         # self.atomEntities = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
         # self.atomicPairs = [] # contains all atomPairs
         # self.covalentBonds = [] # contains only atomPairs detected as connected
@@ -24,6 +32,30 @@ class topologyDiff(object):
         # self.covBondAngles_built = False
         # self.covBondDihedrals_built = False
         # self.build_topology()
+
+    def compare_bonds(self):
+        error_bonds = {}
+        # same nb. of bonds?
+        if len(self.orderedBonds1) != len(self.orderedBonds2):
+            msg =  "Not as many covalents bonds detected in both structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
+            sys.exit(msg)
+        ## error in distance (Angstrom)  for each bond
+        ## checking that the unique ID is the same, if not as many bonds, exit with an error
+        errors = np.array([ (elem[0][4] - elem[1][4]) for elem in zip(self.orderedBonds1[1:], self.orderedBonds2[1:]) if elem[0][0] == elem[1][0]])
+        if len(self.orderedBonds1[1:]) != len(errors):
+            msg =  "As many covalents bonds detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
+            sys.exit(msg)
+        error_bonds = {
+            "errors":errors,
+            "maxAbsError": np.amax(np.absolute(errors))
+        }
+        mean = np.mean(errors)
+        error_bonds["meanError"] = mean
+        error_bonds["varianceError"] = sum([ (x-mean)**2 for x in errors])/len(errors)
+        error_bonds["stdDevError"]   = math.sqrt(error_bonds["varianceError"])
+        error_bonds["rmsError"] =math.sqrt(sum([x**2 for x in np.absolute(errors)])/len(errors))
+        print error_bonds
+        return error_bonds
 
     def get_object(self):
         obj = {}
@@ -53,7 +85,7 @@ class topologyDiff(object):
         import json
         return json.dumps(topo, sort_keys=True, indent=4)
 
-def comparison_requirements(molecule1, molecule2):
+def requirements_for_comparison(molecule1, molecule2):
     msg = ""
     ## the molecules should have the same atoms, provided in the same order
     if molecule1.nbAtomsInMolecule != molecule2.nbAtomsInMolecule:
@@ -61,7 +93,7 @@ def comparison_requirements(molecule1, molecule2):
         sys.exit(msg)
     if molecule1.charge != molecule2.charge:
         msg = "Not the same molecular charge comparing:\n-{} and\n-{}".format(molecule1.shortname, molecule2.shortname)
-    sys.exit(msg)
+        sys.exit(msg)
     for atom1, atom2 in zip(molecule1.listAtoms, molecule2.listAtoms):
         if atom1.atomSymbol != atom2.atomSymbol:
             msg = "Not the same atom symbols: comparing:\n-{} and\n-{}".format(str(atom1), str(atom2))
@@ -90,11 +122,6 @@ def read_arguments():
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="increase output verbosity")
     args = parser.parse_args()
-    import xyz2molecule as xyz
-    molecule1 = xyz.parse_XYZ(args.file_mol1)
-    molecule2 = xyz.parse_XYZ(args.file_mol2)
-    diff = topologyDiff(molecule1, molecule2, covRadFactor=1.3)
-    
     return args
 
 
@@ -123,11 +150,15 @@ def read_arguments():
 #                   "error_dihedrals":error_dihedrals}
 #         return errors
 
-def main():
+def example():
     # read inputs
     args = read_arguments()
     path_to_file1 = os.path.abspath(args.file_mol1)
     path_to_file2 = os.path.abspath(args.file_mol2)
+    import xyz2molecule as xyz
+    molecule1 = xyz.parse_XYZ(path_to_file1)
+    molecule2 = xyz.parse_XYZ(path_to_file2)
+    diff = topologyDiff(molecule1, molecule2, covRadFactor=1.3)
 #     if (args.covRadFactor == None):
 #         print "no factor for bond distance specified\n>> default covalent radius factor will apply.\n(Run './main.py --help' for more options.)"
 #     else:
@@ -172,4 +203,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    example()
