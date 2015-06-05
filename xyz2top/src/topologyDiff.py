@@ -22,7 +22,8 @@ class topologyDiff(object):
         self.orderedAngles2 = self.topology2.order_angles()
         self.orderedDihedral1 = self.topology1.order_dihedralAngles_string()
         self.orderedDihedral2 = self.topology2.order_dihedralAngles_string()
-        error_bonds = self.compare_bonds()
+        error_bonds  = self.compare_bonds()
+        error_angles = self.compare_angles()
         # self.atomEntities = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
         # self.atomicPairs = [] # contains all atomPairs
         # self.covalentBonds = [] # contains only atomPairs detected as connected
@@ -35,27 +36,39 @@ class topologyDiff(object):
 
     def compare_bonds(self):
         error_bonds = {}
+        indBondDistance = 4 ## assumed Angstrom
         # same nb. of bonds?
         if len(self.orderedBonds1) != len(self.orderedBonds2):
             msg =  "Not as many covalents bonds detected in both structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
         ## error in distance (Angstrom)  for each bond
         ## checking that the unique ID is the same, if not as many bonds, exit with an error
-        errors = np.array([ (elem[0][4] - elem[1][4]) for elem in zip(self.orderedBonds1[1:], self.orderedBonds2[1:]) if elem[0][0] == elem[1][0]])
+        errors = np.array([ (elem[0][indBondDistance] - elem[1][indBondDistance]) for elem in zip(self.orderedBonds1[1:], self.orderedBonds2[1:]) if elem[0][0] == elem[1][0]])
         if len(self.orderedBonds1[1:]) != len(errors):
             msg =  "As many covalents bonds detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
-        error_bonds = {
-            "errors":errors,
-            "maxAbsError": np.amax(np.absolute(errors))
-        }
-        mean = np.mean(errors)
-        error_bonds["meanError"] = mean
-        error_bonds["varianceError"] = sum([ (x-mean)**2 for x in errors])/len(errors)
-        error_bonds["stdDevError"]   = math.sqrt(error_bonds["varianceError"])
-        error_bonds["rmsError"] =math.sqrt(sum([x**2 for x in np.absolute(errors)])/len(errors))
-        print error_bonds
-        return error_bonds
+        return get_statistics(errors)
+
+    def compare_angles(self, unit="Degree"):
+        error_angles = {}
+        if unit.lower() == "radian":
+            indDegree = 6
+        else:
+            indDegree = 7 ## assumed Degree otherwise
+        # same nb. of angles?
+        if len(self.orderedAngles1) != len(self.orderedAngles2):
+            msg =  "Not as many covalents angles detected in both structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
+            sys.exit(msg)
+        ## error in angles (degree)  for each bond pair
+        ## checking that the unique ID is the same, if not as many angles, exit with an error
+        print self.orderedAngles1[0]
+        print self.orderedAngles1[1][indDegree]
+        errors = np.array([ (elem[0][indDegree] - elem[1][indDegree]) for elem in zip(self.orderedAngles1[1:], self.orderedAngles2[1:]) if elem[0][0] == elem[1][0]])
+        if len(self.orderedAngles1[1:]) != len(errors):
+            msg =  "As many covalents angles detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
+            sys.exit(msg)
+        print get_statistics(errors)
+        return get_statistics(errors)
 
     def get_object(self):
         obj = {}
@@ -149,6 +162,19 @@ def read_arguments():
 #                   "error_angles":error_angles,
 #                   "error_dihedrals":error_dihedrals}
 #         return errors
+
+def get_statistics(data):
+    stats = {}
+    absData = np.absolute(data)
+    mean = np.mean(data)
+    variance = sum([ (x-mean)**2 for x in data])/len(data)
+    stats["data"]     = data
+    stats["maxAbsError"] = np.amax(absData)
+    stats["mean"]     = mean
+    stats["variance"] = variance
+    stats["stdDev"]   = math.sqrt(variance)
+    stats["rms"]      = math.sqrt(sum([x**2 for x in absData])/len(data))
+    return stats
 
 def example():
     # read inputs
