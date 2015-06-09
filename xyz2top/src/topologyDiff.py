@@ -6,7 +6,7 @@ import numpy as np
 #import atomsinmolecule as mol
 import topology as topo
 import math
-
+import pandas as pd
 
 class topologyDiff(object):
     def __init__(self, molecule1, molecule2, covRadFactor=1.3):
@@ -18,11 +18,13 @@ class topologyDiff(object):
         self.topology2 = topo.topology(molecule2, covRadFactor)
         self.orderedBonds1  = self.topology1.order_convalentBondDistances()
         self.orderedBonds2  = self.topology2.order_convalentBondDistances()
+        #print "\n".join([str(elem) for elem in self.orderedBonds2])
         self.orderedAngles1 = self.topology1.order_angles()
         self.orderedAngles2 = self.topology2.order_angles()
         self.orderedDihedral1 = self.topology1.order_dihedralAngles_string()
         self.orderedDihedral2 = self.topology2.order_dihedralAngles_string()
-        error_bonds  = self.compare_bonds(percentLargest = 1)
+        error_bonds  = self.compare_bonds(percentLargest = 1.5)
+        #print error_bonds["data"]
         error_angles = self.compare_angles()
         # self.atomEntities = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
         # self.atomicPairs = [] # contains all atomPairs
@@ -42,39 +44,59 @@ class topologyDiff(object):
             sys.exit(msg)
         ## error in distance (Angstrom)  for each bond
         ## checking that the unique ID is the same, if not as many bonds, exit with an error
-        errors = np.array([ (elem[0][indBondDistance] - elem[1][indBondDistance]) for elem in zip(self.orderedBonds1[1:], self.orderedBonds2[1:]) if elem[0][0] == elem[1][0]])
-        if len(self.orderedBonds1[1:]) != len(errors):
+        id1 = np.array(self.orderedBonds1[1:])[:,0]
+        id2 = np.array(self.orderedBonds2[1:])[:,0]
+        diffIDs = np.sum(np.absolute(np.subtract(id1, id2)))
+        if diffIDs > 0:
             msg =  "As many covalents bonds detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
+
         #percentLargest = -1 ## 10% largest bond length deviation
-        stats = get_statistics(errors, percentLargest)
-        if stats["ind_Nlargest"] != None:
-            print "Largest bond distance error for pairs:"
-            for bondIndex in stats["ind_Nlargest"]:
-                bondInfo1 = self.orderedBonds1[bondIndex+1]
-                bondInfo2 = self.orderedBonds2[bondIndex+1]
-                print "bondIndex: {}\n\t{}\n\t{}\n\t{}".format(str(bondIndex), 
-                                                               self.orderedBonds1[0],
-                                                               bondInfo1, bondInfo2)
-                indI = bondInfo1[1]
-                indJ = bondInfo1[2]
-                atomI1 = self.topology1.get_atomEntity_by_index(indI)
-                atomJ1 = self.topology1.get_atomEntity_by_index(indJ)
-                atomI2 = self.topology2.get_atomEntity_by_index(indI)
-                atomJ2 = self.topology2.get_atomEntity_by_index(indJ)
-                print "Error: " + str(errors[bondIndex])
-                print "Molecule 1:"
-                print self.orderedBonds1[bondIndex+1]
-                print str(topo.atomPair(atomI1, atomJ1))
-                print "Molecule 2:"
-                print self.orderedBonds2[bondIndex+1]
-                print str(topo.atomPair(atomI2, atomJ2))
-                print "\n\n"
-            print "{}% of the largest bond deviations corresponds to {} bonds out of {}\n".format(percentLargest, len(stats["ind_Nlargest"]), len(errors))
-            #            print "Bonds molecule 1: "
-            #            print self.orderedBonds1[31]
-            print "Max. abs. error: "+ str(stats["maxAbsError"])
-        return get_statistics(errors)
+        dist1 = np.array(self.orderedBonds1[1:])[:,indBondDistance]
+        dist2 = np.array(self.orderedBonds2[1:])[:,indBondDistance]
+        errorBondDist = np.subtract(dist1,dist2)
+        col_dist2 = np.array(self.orderedBonds2)[:,indBondDistance]
+        allDist = np.c_[np.array(self.orderedBonds1), col_dist2]
+        allDist[0][indBondDistance]   =  "Mol1 dist. [A]"
+        allDist[0][indBondDistance+1] =  "Mol2 dist. [A]"
+        col_errors = errorBondDist.tolist()
+        col_errors.insert(0, 'Dist.error [A]')
+        dist_errors = np.c_[allDist, np.array(col_errors)]
+
+        stats = get_statistics(errorBondDist, percentLargest)
+
+        df = pd.DataFrame(dist_errors[1:], columns=dist_errors[0])
+        #df.columns = df.iloc[0]
+        #df.reindex(df.index.drop(0))
+        print df
+        #sortBonds = sorted(dist_errors, key=lambda x: , reverse=True)  
+        # if stats["ind_Nlargest"] != None:
+        #     print "Largest bond distance error for pairs:"
+        #     for bondIndex in stats["ind_Nlargest"]:
+        #         bondInfo1 = self.orderedBonds1[bondIndex+1]
+        #         bondInfo2 = self.orderedBonds2[bondIndex+1]
+        #         print "bondIndex: {}\n\t{}\n\t{}\n\t{}".format(str(bondIndex),
+        #                                                        self.orderedBonds1[0],
+        #                                                        bondInfo1, bondInfo2)
+        #         indI = bondInfo1[1]
+        #         indJ = bondInfo1[2]
+        #         atomI1 = self.topology1.get_atomEntity_by_index(indI)
+        #         atomJ1 = self.topology1.get_atomEntity_by_index(indJ)
+        #         atomI2 = self.topology2.get_atomEntity_by_index(indI)
+        #         atomJ2 = self.topology2.get_atomEntity_by_index(indJ)
+        #         print "Error: " + str(errors[bondIndex])
+        #         print "Molecule 1:"
+        #         print self.orderedBonds1[bondIndex+1]
+        #         print str(topo.atomPair(atomI1, atomJ1))
+        #         print "Molecule 2:"
+        #         print self.orderedBonds2[bondIndex+1]
+        #         print str(topo.atomPair(atomI2, atomJ2))
+        #         print "\n\n"
+        #     print "{}% of the largest bond deviations corresponds to {} bonds out of {}\n".format(percentLargest, len(stats["ind_Nlargest"]), len(errors))
+        #     #            print "Bonds molecule 1: "
+        #     #            print self.orderedBonds1[31]
+        #     print "Max. abs. error: "+ str(stats["maxAbsError"])
+        # return get_statistics(errors)
 
     def compare_angles(self, unit="Degree"):
         if unit.lower() == "radian":
@@ -194,6 +216,7 @@ def get_statistics(data, percentLargest=-1):
     variance = sum([ (x-mean)**2 for x in data])/len(data)
     stats["data"]     = data
     stats["maxAbsError"] = np.amax(absData)
+    stats["minAbsError"] = np.amin(absData)
     stats["mean"]     = mean
     stats["variance"] = variance
     stats["stdDev"]   = math.sqrt(variance)
@@ -205,15 +228,22 @@ def get_statistics(data, percentLargest=-1):
             msg="the percentage of largest element to look for should be in the range [0-100]."
             sys.exit(msg)
         nbElem = math.floor(percentLargest* len(data)/100.)
-        ind_Nlargest = absData.argsort()[-1*nbElem:][::-1]
+        #res = sorted(lst, key=lambda x: x[1], reverse=True)
+        indicesSorted = absData.argsort()[-1*nbElem:] # indices of increasing abs.error
+        ind_Nlargest = indicesSorted[::-1] # largest to smallest
         stats["ind_Nlargest"] = ind_Nlargest
     return stats
 
-def example():
+def example_valinomycin_pureLinK_vs_LinKwithDF():
     # read inputs
-    args = read_arguments()
-    path_to_file1 = os.path.abspath(args.file_mol1)
-    path_to_file2 = os.path.abspath(args.file_mol2)
+    # args = read_arguments()
+    # path_to_file1 = os.path.abspath(args.file_mol1)
+    # path_to_file2 = os.path.abspath(args.file_mol2)
+    path_to_file1 = "/home/ctcc2/Documents/CODE-DEV/xyz2top/xyz2top/tests/files/valinomycin_geomOpt_DFT-b3lyp_cc-pVTZ.xyz"
+    path_to_file2 = "/home/ctcc2/Documents/CODE-DEV/xyz2top/xyz2top/tests/files/valinomycin_geomOpt_DFT-b3lyp_cc-pVTZ_noDF.xyz"
+
+
+
     import xyz2molecule as xyz
     molecule1 = xyz.parse_XYZ(path_to_file1)
     molecule2 = xyz.parse_XYZ(path_to_file2)
@@ -262,4 +292,4 @@ def example():
 
 
 if __name__ == "__main__":
-    example()
+    example_valinomycin_pureLinK_vs_LinKwithDF()
