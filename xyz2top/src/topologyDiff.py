@@ -37,7 +37,15 @@ class topologyDiff(object):
         # self.build_topology()
 
     def compare_bonds(self, percentLargest = -1):
-        indBondDistance = 4 ## assumed Angstrom
+        ## Keep all data toghether and filter/sort on it
+        nameCol_i      = "index_i"
+        nameCol_j      = "index_j"
+        nameCol_IDs    = "uniquePairID"
+        nameCol_dist1  = "Mol1 dist. [A]"
+        nameCol_dist2  = "Mol2 dist. [A]"
+        nameCol_errors = "Dist.error [A]"
+        nameCol_maxAbsError  = "maxAbsError [A]"
+
         # same nb. of bonds?
         if len(self.orderedBonds1) != len(self.orderedBonds2):
             msg =  "Not as many covalents bonds detected in both structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
@@ -51,24 +59,37 @@ class topologyDiff(object):
             msg =  "As many covalents bonds detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
 
-        #percentLargest = -1 ## 10% largest bond length deviation
-        dist1 = np.array(self.orderedBonds1[1:])[:,indBondDistance]
-        dist2 = np.array(self.orderedBonds2[1:])[:,indBondDistance]
-        errorBondDist = np.subtract(dist1,dist2)
-        col_dist2 = np.array(self.orderedBonds2)[:,indBondDistance]
-        allDist = np.c_[np.array(self.orderedBonds1), col_dist2]
-        allDist[0][indBondDistance]   =  "Mol1 dist. [A]"
-        allDist[0][indBondDistance+1] =  "Mol2 dist. [A]"
-        col_errors = errorBondDist.tolist()
-        col_errors.insert(0, 'Dist.error [A]')
-        dist_errors = np.c_[allDist, np.array(col_errors)]
-
-        stats = get_statistics(errorBondDist, percentLargest)
-
-        df = pd.DataFrame(dist_errors[1:], columns=dist_errors[0])
+        ## Pandas Dataframe
+        df1 = pd.DataFrame(self.orderedBonds1[1:], columns=self.orderedBonds1[0])
+        df2 = pd.DataFrame(self.orderedBonds2[1:], columns=self.orderedBonds2[0])
+        df1 = df1.rename(columns={"distance [A]":nameCol_dist1})
+        df2 = df2.rename(columns={"distance [A]":nameCol_dist2})
+        df = df1
+        df[nameCol_dist2] = df2[nameCol_dist2]
+        df[nameCol_errors] = df[nameCol_dist1] - df[nameCol_dist2]
+        ## convert string to float/int
+        for header in [nameCol_dist1, nameCol_dist2, nameCol_errors]:
+            df[header] = df[header].astype('float64')
+        for header in [nameCol_IDs, nameCol_i, nameCol_j]:
+            df[header] = df[header].astype('int')
+        ###df = df.sort([nameCol_errors, nameCol_IDs], ascending=[False,True])
+        df[nameCol_maxAbsError] = df[nameCol_errors].abs()
+        df = df.sort([nameCol_maxAbsError], ascending=[False])
+        print df
+        print "Pandas: maxAbs"
+        print df[nameCol_maxAbsError].max()
+        print "Pandas: mean"
+        print df[nameCol_errors].mean()
+        print "Pandas: variance"
+        print df[nameCol_errors].var()
+        print "Pandas: std"
+        print df[nameCol_errors].std()
+        print "Pandas: Mean Abs. deviation"
+        print df[nameCol_errors].mad()
+        
         #df.columns = df.iloc[0]
         #df.reindex(df.index.drop(0))
-        print df
+        #print df
         #sortBonds = sorted(dist_errors, key=lambda x: , reverse=True)  
         # if stats["ind_Nlargest"] != None:
         #     print "Largest bond distance error for pairs:"
@@ -213,7 +234,11 @@ def get_statistics(data, percentLargest=-1):
     stats = {}
     absData = np.absolute(data)
     mean = np.mean(data)
-    variance = sum([ (x-mean)**2 for x in data])/len(data)
+    N = len(data)
+    ## "unbiased variance" as defined by Zwillinger 1995, p. 603
+    ## (N-1) instead of N
+    ## http://mathworld.wolfram.com/SampleVariance.html
+    variance = sum([ (x-mean)**2. for x in data])/(N-1)
     stats["data"]     = data
     stats["maxAbsError"] = np.amax(absData)
     stats["minAbsError"] = np.amin(absData)
