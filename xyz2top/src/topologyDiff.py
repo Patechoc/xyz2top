@@ -75,49 +75,13 @@ class topologyDiff(object):
         ###df = df.sort([nameCol_errors, nameCol_IDs], ascending=[False,True])
         df[nameCol_maxAbsError] = df[nameCol_errors].abs()
         df = df.sort([nameCol_maxAbsError], ascending=[False])
-        print df
-        print "Pandas: maxAbs"
-        print df[nameCol_maxAbsError].max()
-        print "Pandas: mean"
-        print df[nameCol_errors].mean()
-        print "Pandas: variance"
-        print df[nameCol_errors].var()
-        print "Pandas: std"
-        print df[nameCol_errors].std()
-        print "Pandas: Mean Abs. deviation"
-        print df[nameCol_errors].mad()
-        
-        #df.columns = df.iloc[0]
-        #df.reindex(df.index.drop(0))
-        #print df
-        #sortBonds = sorted(dist_errors, key=lambda x: , reverse=True)  
-        # if stats["ind_Nlargest"] != None:
-        #     print "Largest bond distance error for pairs:"
-        #     for bondIndex in stats["ind_Nlargest"]:
-        #         bondInfo1 = self.orderedBonds1[bondIndex+1]
-        #         bondInfo2 = self.orderedBonds2[bondIndex+1]
-        #         print "bondIndex: {}\n\t{}\n\t{}\n\t{}".format(str(bondIndex),
-        #                                                        self.orderedBonds1[0],
-        #                                                        bondInfo1, bondInfo2)
-        #         indI = bondInfo1[1]
-        #         indJ = bondInfo1[2]
-        #         atomI1 = self.topology1.get_atomEntity_by_index(indI)
-        #         atomJ1 = self.topology1.get_atomEntity_by_index(indJ)
-        #         atomI2 = self.topology2.get_atomEntity_by_index(indI)
-        #         atomJ2 = self.topology2.get_atomEntity_by_index(indJ)
-        #         print "Error: " + str(errors[bondIndex])
-        #         print "Molecule 1:"
-        #         print self.orderedBonds1[bondIndex+1]
-        #         print str(topo.atomPair(atomI1, atomJ1))
-        #         print "Molecule 2:"
-        #         print self.orderedBonds2[bondIndex+1]
-        #         print str(topo.atomPair(atomI2, atomJ2))
-        #         print "\n\n"
-        #     print "{}% of the largest bond deviations corresponds to {} bonds out of {}\n".format(percentLargest, len(stats["ind_Nlargest"]), len(errors))
-        #     #            print "Bonds molecule 1: "
-        #     #            print self.orderedBonds1[31]
-        #     print "Max. abs. error: "+ str(stats["maxAbsError"])
-        # return get_statistics(errors)
+        ## STATISTICS
+        mean     = df[nameCol_errors].mean()
+        variance = df[nameCol_errors].var()
+        stdDev   = df[nameCol_errors].std()
+        mad      = df[nameCol_errors].mad()
+        maxAbs   = df[nameCol_maxAbsError].max()
+        return {"data":df}
 
     def compare_angles(self, unit="Degree"):
         if unit.lower() == "radian":
