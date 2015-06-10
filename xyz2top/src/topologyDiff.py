@@ -24,6 +24,7 @@ class topologyDiff(object):
         self.orderedDihedral1 = self.topology1.order_dihedralAngles_string()
         self.orderedDihedral2 = self.topology2.order_dihedralAngles_string()
         error_bonds  = self.compare_bonds(percentLargest = 1.5)
+        print error_bonds
         #print error_bonds["data"]
         error_angles = self.compare_angles()
         # self.atomEntities = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
@@ -81,7 +82,13 @@ class topologyDiff(object):
         stdDev   = df[nameCol_errors].std()
         mad      = df[nameCol_errors].mad()
         maxAbs   = df[nameCol_maxAbsError].max()
-        return {"data":df}
+        return {
+            "data":df,
+            "mean":mean,
+            "variance":variance,
+            "stdDev":stdDev,
+            "mad":mad,
+            "maxAbs":maxAbs}
 
     def compare_angles(self, unit="Degree"):
         if unit.lower() == "radian":
