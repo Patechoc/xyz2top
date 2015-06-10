@@ -119,8 +119,8 @@ class topologyDiff(object):
         df[nameCol_anglDeg2] = df2[nameCol_anglDeg2]
         df[nameCol_errors] = df[nameCol_anglDeg1] - df[nameCol_anglDeg2]
         ## checking that the unique ID is the same, if not as many angles, exit with an error
-        diffIDs = (df1[nameCol_IDs] - df2[nameCol_IDs]).abs().sum()
-        if diffIDs > 0:
+        diffIDs = pd.DataFrame(df1[nameCol_IDs].values - df2[nameCol_IDs].values).abs().sum()
+        if diffIDs.values[0] > 0:
             msg =  "As many covalents angles detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
         ###df = df.sort([nameCol_errors, nameCol_IDs], ascending=[False,True])
@@ -162,23 +162,13 @@ class topologyDiff(object):
         df[nameCol_dihedDeg2] = df2[nameCol_dihedDeg2]
         df[nameCol_errors] = df[nameCol_dihedDeg1] - df[nameCol_dihedDeg2]
         ## checking that the unique ID is the same, if not as many angles, exit with an error
-        diffIDs = (df1[nameCol_IDs] - df2[nameCol_IDs]).abs().sum()
-        if diffIDs > 0:
-            msg =  "As many covalents dihedral angles detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
+        diffIDs = pd.DataFrame(df1[nameCol_IDs].values - df2[nameCol_IDs].values).abs().sum()
+        if diffIDs.values[0] > 0:
+            msg =  "As many covalents dihedral angles detected, but not between the same atoms comparin structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
         df[nameCol_absError] = df[nameCol_errors].abs()
-        df4 = df.sort([nameCol_errors], ascending=[False])
-        df5 = df.sort([nameCol_absError, nameCol_IDs], ascending=[False,True])
-        print "df[nameCol_IDs][0:10]"
-        print df[nameCol_IDs][0:10]
-        print "df4[nameCol_IDs][0:10]"
-        print df4[nameCol_IDs][0:10]
-        dfdiff= df[nameCol_IDs][0:10] #- df4[nameCol_IDs][0:10]
-        dfdiff= dfdiff[nameCol_IDs][0:10] - df4[nameCol_IDs][0:10]
-## http://stackoverflow.com/questions/11106823/adding-two-pandas-dataframes
-        #print "dfdiff.sum()"
-        #print dfdiff.sum()
-        print dfdiff
+        df = df.sort([nameCol_absError, nameCol_IDs], ascending=[False,True])
+        #print pd.DataFrame(d8.values-d7.values)
         ## STATISTICS
         return get_statistics(df, nameCol_errors, unit="degrees")
 
