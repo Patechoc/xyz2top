@@ -21,13 +21,19 @@ class topologyDiff(object):
         #print "\n".join([str(elem) for elem in self.orderedBonds2])
         self.orderedAngles1 = self.topology1.order_angles()
         self.orderedAngles2 = self.topology2.order_angles()
-        self.orderedDihedral1 = self.topology1.order_dihedralAngles_string()
-        self.orderedDihedral2 = self.topology2.order_dihedralAngles_string()
+        self.orderedDihedral1 = self.topology1.order_dihedralAngles()
+        self.orderedDihedral2 = self.topology2.order_dihedralAngles()
         error_bonds  = self.compare_bonds(percentLargest = 1.5)
+        print "error_bonds"
         print error_bonds
-        #print error_bonds["data"]
         error_angles = self.compare_angles()
         # self.atomEntities = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
+        print "error_angles"
+        print error_angles
+        error_dihedrals = self.compare_dihedralAngles()
+        print "error_dihedrals"
+        print error_dihedrals
+
         # self.atomicPairs = [] # contains all atomPairs
         # self.covalentBonds = [] # contains only atomPairs detected as connected
         # self.covalentBondAngles = []
@@ -42,10 +48,11 @@ class topologyDiff(object):
         nameCol_i      = "index_i"
         nameCol_j      = "index_j"
         nameCol_IDs    = "uniquePairID"
+        nameCol_dist   = "distance [A]"
         nameCol_dist1  = "Mol1 dist. [A]"
         nameCol_dist2  = "Mol2 dist. [A]"
         nameCol_errors = "Dist.error [A]"
-        nameCol_maxAbsError  = "maxAbsError [A]"
+        nameCol_absError  = "absError [A]"
 
         # same nb. of bonds?
         if len(self.orderedBonds1) != len(self.orderedBonds2):
@@ -59,54 +66,121 @@ class topologyDiff(object):
         if diffIDs > 0:
             msg =  "As many covalents bonds detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
-
         ## Pandas Dataframe
         df1 = pd.DataFrame(self.orderedBonds1[1:], columns=self.orderedBonds1[0])
         df2 = pd.DataFrame(self.orderedBonds2[1:], columns=self.orderedBonds2[0])
-        df1 = df1.rename(columns={"distance [A]":nameCol_dist1})
-        df2 = df2.rename(columns={"distance [A]":nameCol_dist2})
+        ## convert string to float/int
+        for header in [nameCol_dist]:
+            df1[header] = df1[header].astype('float64')
+            df2[header] = df2[header].astype('float64')
+        for header in [nameCol_IDs, nameCol_i, nameCol_j]:
+            df1[header] = df1[header].astype('int')
+            df2[header] = df2[header].astype('int')
+        df1 = df1.rename(columns={nameCol_dist:nameCol_dist1})
+        df2 = df2.rename(columns={nameCol_dist:nameCol_dist2})
         df = df1
         df[nameCol_dist2] = df2[nameCol_dist2]
         df[nameCol_errors] = df[nameCol_dist1] - df[nameCol_dist2]
-        ## convert string to float/int
-        for header in [nameCol_dist1, nameCol_dist2, nameCol_errors]:
-            df[header] = df[header].astype('float64')
-        for header in [nameCol_IDs, nameCol_i, nameCol_j]:
-            df[header] = df[header].astype('int')
         ###df = df.sort([nameCol_errors, nameCol_IDs], ascending=[False,True])
-        df[nameCol_maxAbsError] = df[nameCol_errors].abs()
-        df = df.sort([nameCol_maxAbsError], ascending=[False])
+        df[nameCol_absError] = df[nameCol_errors].abs()
+        df = df.sort([nameCol_absError], ascending=[False])
+        # print df
         ## STATISTICS
-        mean     = df[nameCol_errors].mean()
-        variance = df[nameCol_errors].var()
-        stdDev   = df[nameCol_errors].std()
-        mad      = df[nameCol_errors].mad()
-        maxAbs   = df[nameCol_maxAbsError].max()
-        return {
-            "data":df,
-            "mean":mean,
-            "variance":variance,
-            "stdDev":stdDev,
-            "mad":mad,
-            "maxAbs":maxAbs}
+        return get_statistics(df, nameCol_errors, unit="angstrom")
 
-    def compare_angles(self, unit="Degree"):
-        if unit.lower() == "radian":
-            indDegree = 6
-        else:
-            indDegree = 7 ## assumed Degree otherwise
+    def compare_angles(self):
+        ## Keep all data toghether and filter/sort on it
+        nameCol_IDs    = "uniqueID"
+        nameCol_i      = "index_i"
+        nameCol_j      = "index_j"
+        nameCol_k      = "index_k"
+        nameCol_anglDeg = 'Angle IJK [deg]'
+        nameCol_anglDeg1 = 'Angle1 IJK [deg]'
+        nameCol_anglDeg2 = 'Angle2 IJK [deg]'
+        nameCol_errors   = "Angle error [deg]"
+        nameCol_absError = "absError [deg]"
         # same nb. of angles?
         if len(self.orderedAngles1) != len(self.orderedAngles2):
             msg =  "Not as many covalents angles detected in both structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
-        ## error in angles (degree)  for each bond pair
+        ## Pandas Dataframe
+        df1 = pd.DataFrame(self.orderedAngles1[1:], columns=self.orderedAngles1[0])
+        df2 = pd.DataFrame(self.orderedAngles2[1:], columns=self.orderedAngles2[0])
+        ## convert string to float/int
+        for header in [nameCol_IDs, nameCol_i, nameCol_j, nameCol_k]:
+            df1[header] = df1[header].astype('int')
+            df2[header] = df2[header].astype('int')
+        for header in [nameCol_anglDeg]:
+            df1[header] = df1[header].astype('float64')
+            df2[header] = df2[header].astype('float64')
+        df1 = df1.rename(columns={nameCol_anglDeg:nameCol_anglDeg1})
+        df2 = df2.rename(columns={nameCol_anglDeg:nameCol_anglDeg2})
+        df = df1
+        df[nameCol_anglDeg2] = df2[nameCol_anglDeg2]
+        df[nameCol_errors] = df[nameCol_anglDeg1] - df[nameCol_anglDeg2]
         ## checking that the unique ID is the same, if not as many angles, exit with an error
-        errors = np.array([ (elem[0][indDegree] - elem[1][indDegree]) for elem in zip(self.orderedAngles1[1:], self.orderedAngles2[1:]) if elem[0][0] == elem[1][0]])
-        if len(self.orderedAngles1[1:]) != len(errors):
+        diffIDs = (df1[nameCol_IDs] - df2[nameCol_IDs]).abs().sum()
+        if diffIDs > 0:
             msg =  "As many covalents angles detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
-        stats = get_statistics(errors)
-        return stats
+        ###df = df.sort([nameCol_errors, nameCol_IDs], ascending=[False,True])
+        df[nameCol_absError] = df[nameCol_errors].abs()
+        df = df.sort([nameCol_absError], ascending=[False])
+        #print df
+        ## STATISTICS
+        return get_statistics(df, nameCol_errors, unit="degrees")
+
+    def compare_dihedralAngles(self):
+        ## Keep all data toghether and filter/sort on it
+        nameCol_IDs    = "uniqueID"
+        nameCol_i      = "index_i"
+        nameCol_j      = "index_j"
+        nameCol_k      = "index_k"
+        nameCol_l      = "index_l"
+        nameCol_dihedDeg  = "Dihedral IJ-KL [deg]"
+        nameCol_dihedDeg1 = "Dihedral1 IJ-KL [deg]"
+        nameCol_dihedDeg2 = "Dihedral2 IJ-KL [deg]"
+        nameCol_errors   = "Dihedral angle error [deg]"
+        nameCol_absError = "absError [deg]"
+        # same nb. of dihedral angles?
+        if len(self.orderedDihedral1) != len(self.orderedDihedral2):
+            msg =  "Not as many covalents dihedral angles detected in both structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
+            sys.exit(msg)
+        ## Pandas Dataframe
+        df1 = pd.DataFrame(self.orderedDihedral1[1:], columns=self.orderedDihedral1[0])
+        df2 = pd.DataFrame(self.orderedDihedral2[1:], columns=self.orderedDihedral2[0])
+        ## convert string to float/int
+        for header in [nameCol_IDs, nameCol_i, nameCol_j, nameCol_k, nameCol_l]:
+            df1[header] = df1[header].astype('int')
+            df2[header] = df2[header].astype('int')
+        for header in [nameCol_dihedDeg]:
+            df1[header] = df1[header].astype('float64')
+            df2[header] = df2[header].astype('float64')
+        df1 = df1.rename(columns={nameCol_dihedDeg:nameCol_dihedDeg1})
+        df2 = df2.rename(columns={nameCol_dihedDeg:nameCol_dihedDeg2})
+        df = df1
+        df[nameCol_dihedDeg2] = df2[nameCol_dihedDeg2]
+        df[nameCol_errors] = df[nameCol_dihedDeg1] - df[nameCol_dihedDeg2]
+        ## checking that the unique ID is the same, if not as many angles, exit with an error
+        diffIDs = (df1[nameCol_IDs] - df2[nameCol_IDs]).abs().sum()
+        if diffIDs > 0:
+            msg =  "As many covalents dihedral angles detected, but not between the same atoms comparing structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
+            sys.exit(msg)
+        df[nameCol_absError] = df[nameCol_errors].abs()
+        df4 = df.sort([nameCol_errors], ascending=[False])
+        df5 = df.sort([nameCol_absError, nameCol_IDs], ascending=[False,True])
+        print "df[nameCol_IDs][0:10]"
+        print df[nameCol_IDs][0:10]
+        print "df4[nameCol_IDs][0:10]"
+        print df4[nameCol_IDs][0:10]
+        dfdiff= df[nameCol_IDs][0:10] #- df4[nameCol_IDs][0:10]
+        dfdiff= dfdiff[nameCol_IDs][0:10] - df4[nameCol_IDs][0:10]
+## http://stackoverflow.com/questions/11106823/adding-two-pandas-dataframes
+        #print "dfdiff.sum()"
+        #print dfdiff.sum()
+        print dfdiff
+        ## STATISTICS
+        return get_statistics(df, nameCol_errors, unit="degrees")
 
     def get_object(self):
         obj = {}
@@ -176,59 +250,19 @@ def read_arguments():
     return args
 
 
-# def compare_topologies(filepath1, prefix1, filepath2, prefix2):
-#         covRadFactor = -1.
-#         list_pairs = []
-#         list_triples = []
-#         list_quads = []
-#         # check that the topologies used the same configuration (= same covRadFactor)
-#         config_topo = {"covRadFactor":covRadFactor}
-#         # compare the number of covalent bonds
-#         # for identical covalent bonds, provides stats (ErrorMaxAbs, ErrorMean, ErrorStd, ErrorRMS)
-#         error_bonds ={}
-
-#         # compare the number of angles between covalent bonds
-#         # for identical angles btw bonds, provides stats (ErrorMaxAbs, ErrorMean, ErrorStd, ErrorRMS)
-#         error_angles ={}
-
-#         # compare the number of dihedral angles between 3 covalent bonds
-#         # for identical dihedrals btw 3 bonds, provides stats (ErrorMaxAbs, ErrorMean, ErrorStd, ErrorRMS)
-#         error_dihedrals ={}
-
-#         errors = {"config_topo":config_topo,
-#                   "error_bonds":error_bonds,
-#                   "error_angles":error_angles,
-#                   "error_dihedrals":error_dihedrals}
-#         return errors
-
-def get_statistics(data, percentLargest=-1):
-    stats = {}
-    absData = np.absolute(data)
-    mean = np.mean(data)
-    N = len(data)
-    ## "unbiased variance" as defined by Zwillinger 1995, p. 603
-    ## (N-1) instead of N
-    ## http://mathworld.wolfram.com/SampleVariance.html
-    variance = sum([ (x-mean)**2. for x in data])/(N-1)
-    stats["data"]     = data
-    stats["maxAbsError"] = np.amax(absData)
-    stats["minAbsError"] = np.amin(absData)
-    stats["mean"]     = mean
-    stats["variance"] = variance
-    stats["stdDev"]   = math.sqrt(variance)
-    stats["rms"]      = math.sqrt(sum([x**2 for x in absData])/len(data))
-    stats["ind_Nlargest"] = None
-    ## indexes of the largest elements in the set. Assuming errors, look for absolute values
-    if percentLargest !=-1: # do not look for those largest elements
-        if percentLargest < 0 or percentLargest >100:
-            msg="the percentage of largest element to look for should be in the range [0-100]."
-            sys.exit(msg)
-        nbElem = math.floor(percentLargest* len(data)/100.)
-        #res = sorted(lst, key=lambda x: x[1], reverse=True)
-        indicesSorted = absData.argsort()[-1*nbElem:] # indices of increasing abs.error
-        ind_Nlargest = indicesSorted[::-1] # largest to smallest
-        stats["ind_Nlargest"] = ind_Nlargest
-    return stats
+def get_statistics(dataFrame, nameData, unit=""):
+    mean     = dataFrame[nameData].mean()
+    variance = dataFrame[nameData].var()
+    stdDev   = dataFrame[nameData].std()
+    mad      = dataFrame[nameData].mad()
+    maxAbs   = dataFrame[nameData].abs().max()
+    return {
+        "unit":unit,
+        "mean":mean,
+        "variance":variance,
+        "stdDev":stdDev,
+        "mad":mad,
+        "maxAbs":maxAbs}
 
 def example_valinomycin_pureLinK_vs_LinKwithDF():
     # read inputs
