@@ -23,25 +23,12 @@ class topologyDiff(object):
         self.orderedAngles2 = self.topology2.order_angles()
         self.orderedDihedral1 = self.topology1.order_dihedralAngles()
         self.orderedDihedral2 = self.topology2.order_dihedralAngles()
-        error_bonds  = self.compare_bonds(percentLargest = 1.5)
-        print "error_bonds"
-        print error_bonds
-        error_angles = self.compare_angles()
-        # self.atomEntities = [atomEntity(ai,i) for i,ai in enumerate(self.molecule.listAtoms)]
-        print "error_angles"
-        print error_angles
-        error_dihedrals = self.compare_dihedralAngles()
-        print "error_dihedrals"
-        print error_dihedrals
-
-        # self.atomicPairs = [] # contains all atomPairs
-        # self.covalentBonds = [] # contains only atomPairs detected as connected
-        # self.covalentBondAngles = []
-        # self.covalentDihedralAngles = []
-        # self.covBonds_built = False
-        # self.covBondAngles_built = False
-        # self.covBondDihedrals_built = False
-        # self.build_topology()
+        self.error_bonds  = self.compare_bonds(percentLargest = 1.5)
+        self.error_angles = self.compare_angles()
+        self.error_dihedrals = self.compare_dihedralAngles()
+        # print "error_bonds", self.error_bonds
+        # print "error_angles", self.error_angles
+        # print "error_dihedrals", self.error_dihedrals
 
     def compare_bonds(self, percentLargest = -1):
         ## Keep all data toghether and filter/sort on it
@@ -185,15 +172,30 @@ class topologyDiff(object):
 
     def __str__(self):
         return "COMPARISON OF TOPOLOGIES (summary):\
-        \n\tmolecule: {} ({} atoms)\
+        \n\tmolecules compared:\
+        \n\t\t- {} ({} atoms)\
+        \n\t\t- {} ({} atoms)\
         \n\tCovalent radius factor: {}\
-        \n\tTotal nb. of possible atomic pairs : {}\
-        \n\tTotal nb. of pairs detected as bonds: {}\
-        \n\tTotal nb. of angles between bonds: {}\
-        \n\tTotal nb. of dihedral angles: {}\
-        ".format(self.molecule.shortname,
-                 self.molecule.nbAtomsInMolecule,
-                 self.covRadFactor)
+        \n\tCovalents bonds errors:\
+        \n\t\t- mean: {:-.1e} {}\
+        \n\t\t- std:  {:-.1e} {}\
+        \n\tCovalents angles errors:\
+        \n\t\t- mean: {:-.1e} {}\
+        \n\t\t- std:  {:-.1e} {}\
+        \n\tDihedral angles errors:\
+        \n\t\t- mean: {:-.1e} {}\
+        \n\t\t- std:  {:-.1e} {}\
+        ".format(self.molecule1.shortname,
+                 self.molecule1.nbAtomsInMolecule,
+                 self.molecule2.shortname,
+                 self.molecule2.nbAtomsInMolecule,
+                 self.topology1.covRadFactor,
+                 self.error_bonds['mean'],self.error_bonds['unit'],
+                 self.error_bonds['stdDev'],self.error_bonds['unit'],
+                 self.error_angles['mean'],self.error_angles['unit'],
+                 self.error_angles['stdDev'],self.error_angles['unit'],
+                 self.error_dihedrals['mean'],self.error_dihedrals['unit'],
+                 self.error_dihedrals['stdDev'],self.error_dihedrals['unit'])
 
     def get_as_JSON(self):
         topoComparison = self.get_object()
@@ -260,55 +262,11 @@ def example_valinomycin_pureLinK_vs_LinKwithDF():
     # path_to_file1 = os.path.abspath(args.file_mol1)
     # path_to_file2 = os.path.abspath(args.file_mol2)
     path_to_file1 = "/home/ctcc2/Documents/CODE-DEV/xyz2top/xyz2top/tests/files/valinomycin_geomOpt_DFT-b3lyp_cc-pVTZ.xyz"
-    path_to_file2 = "/home/ctcc2/Documents/CODE-DEV/xyz2top/xyz2top/tests/files/valinomycin_geomOpt_DFT-b3lyp_cc-pVTZ_noDF.xyz"
-
-
-
+    path_to_file2 = "/home/ctcc2/Documents/CODE-DEV/xyz2top/xyz2top/tests/files/valinomycin_geomOpt_DFT-b3lyp-noDF_cc-pVTZ.xyz"
     import xyz2molecule as xyz
     molecule1 = xyz.parse_XYZ(path_to_file1)
     molecule2 = xyz.parse_XYZ(path_to_file2)
     diff = topologyDiff(molecule1, molecule2, covRadFactor=1.3)
-#     if (args.covRadFactor == None):
-#         print "no factor for bond distance specified\n>> default covalent radius factor will apply.\n(Run './main.py --help' for more options.)"
-#     else:
-#         print "Covalent radius factor set to ", args.covRadFactor
-#         if args.verbose:
-#             print "Approximate the molecular topology stored in {} \n  \
-#             with connections detected as covalent bonds if pair-atomic \
-#             distance goes below {} times the sum of the covalent radii.\
-#             ".format(args.filename, args.covRadFactor)
-#     ### parse_molecule_XYZ()
-#     molecule = xyz.parse_XYZ(path_to_file)
-#     #print molecule.get_object()
-#     #print molecule
-
-#     ### compute the topology
-#     if (args.covRadFactor != None):
-#         molecular_topology = topology(molecule, args.covRadFactor)
-#     else:
-#         molecular_topology = topology(molecule)
-#     molecular_topology.build_topology()
-# #    print molecular_topology.get_as_JSON()
-#     print molecular_topology
-
-#     ### print topology to file
-#     jsonString = molecular_topology.get_as_JSON()
-#     with open('./topology.json', 'w') as outfile:
-#         outfile.write(jsonString)
-
-#     print "\nZmatrix format: (not done yet)"
-#     print molecular_topology.get_as_Zmatrix()
-
-#     print "\nZmatrix format with variables: (not done yet)"
-#     print molecular_topology.get_as_Zmatrix(useVariables=True)
-
-#     print  "\nCreate 3 topology files for bonds, angles and dihedrals + config.txt"
-#     [filename_config, filename_bonds, filename_angles, filename_dihedralAngles] = molecular_topology.write_topology_files()
-#     print "files generated:" \
-#         + "\n\t- " + filename_config \
-#         + "\n\t- " + filename_bonds \
-#         + "\n\t- " + filename_angles \
-#         + "\n\t- " + filename_dihedralAngles;
 
 
 if __name__ == "__main__":
