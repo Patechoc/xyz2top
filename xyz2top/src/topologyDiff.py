@@ -86,6 +86,7 @@ class topologyDiff(object):
         nameCol_anglDeg2 = 'Angle2 IJK [deg]'
         nameCol_errors   = "Angle error [deg]"
         nameCol_absError = "absError [deg]"
+        nameCol_relError = "relError [deg]"
         # same nb. of angles?
         if len(self.orderedAngles1) != len(self.orderedAngles2):
             msg =  "Not as many covalents angles detected in both structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
@@ -112,10 +113,11 @@ class topologyDiff(object):
             sys.exit(msg)
         ###df = df.sort([nameCol_errors, nameCol_IDs], ascending=[False,True])
         df[nameCol_absError] = df[nameCol_errors].abs()
-        df = df.sort([nameCol_absError], ascending=[False])
-        #print df
+        df[nameCol_relError] = df[nameCol_errors].map( lambda x: x if abs(x) < 180. else np.sign(x)*abs(360.-x))
+        df = df.sort([nameCol_relError, nameCol_IDs], ascending=[False,True])
+        #print pd.DataFrame(d8.values-d7.values)
         ## STATISTICS
-        return get_statistics(df, nameCol_errors, unit="degrees")
+        return get_statistics(df, nameCol_relError, unit="degrees")
 
     def compare_dihedralAngles(self):
         ## Keep all data toghether and filter/sort on it
@@ -129,6 +131,7 @@ class topologyDiff(object):
         nameCol_dihedDeg2 = "Dihedral2 IJ-KL [deg]"
         nameCol_errors   = "Dihedral angle error [deg]"
         nameCol_absError = "absError [deg]"
+        nameCol_relError = "relError [deg]"
         # same nb. of dihedral angles?
         if len(self.orderedDihedral1) != len(self.orderedDihedral2):
             msg =  "Not as many covalents dihedral angles detected in both structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
@@ -154,10 +157,11 @@ class topologyDiff(object):
             msg =  "As many covalents dihedral angles detected, but not between the same atoms comparin structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
         df[nameCol_absError] = df[nameCol_errors].abs()
-        df = df.sort([nameCol_absError, nameCol_IDs], ascending=[False,True])
+        df[nameCol_relError] = df[nameCol_errors].map( lambda x: x if abs(x) < 180. else np.sign(x)*(360.-abs(x)))
+        df = df.sort([nameCol_relError, nameCol_IDs], ascending=[False,True])
         #print pd.DataFrame(d8.values-d7.values)
         ## STATISTICS
-        return get_statistics(df, nameCol_errors, unit="degrees")
+        return get_statistics(df, nameCol_relError, unit="degrees")
 
     def get_object(self):
         obj = {}
@@ -253,7 +257,7 @@ def get_statistics(dataFrame, nameData, unit=""):
         "mean":mean,
         "variance":variance,
         "stdDev":stdDev,
-        "mad":mad,
+        "mad":mad,  ## mean/average absolute deviation
         "maxAbs":maxAbs}
 
 def example_valinomycin_pureLinK_vs_LinKwithDF():
