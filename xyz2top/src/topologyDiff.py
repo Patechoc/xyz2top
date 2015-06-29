@@ -113,7 +113,7 @@ class topologyDiff(object):
             sys.exit(msg)
         ###df = df.sort([nameCol_errors, nameCol_IDs], ascending=[False,True])
         df[nameCol_absError] = df[nameCol_errors].abs()
-        df[nameCol_relError] = df[nameCol_errors].map( lambda x: x if abs(x) < 180. else np.sign(x)*abs(360.-x))
+        df[nameCol_relError] = df[nameCol_errors].map( lambda x: x if abs(x) < 180. else np.sign(x)*(abs(x)-360.))
         df = df.sort([nameCol_relError, nameCol_IDs], ascending=[False,True])
         #print pd.DataFrame(d8.values-d7.values)
         ## STATISTICS
@@ -157,7 +157,7 @@ class topologyDiff(object):
             msg =  "As many covalents dihedral angles detected, but not between the same atoms comparin structures:\n - {}".format(molecule1.shortname, molecule2.shortname)
             sys.exit(msg)
         df[nameCol_absError] = df[nameCol_errors].abs()
-        df[nameCol_relError] = df[nameCol_errors].map( lambda x: x if abs(x) < 180. else np.sign(x)*(360.-abs(x)))
+        df[nameCol_relError] = df[nameCol_errors].map( lambda x: x if abs(x) < 180. else np.sign(x)*(abs(x)-360.))
         df = df.sort([nameCol_relError, nameCol_IDs], ascending=[False,True])
         #print pd.DataFrame(d8.values-d7.values)
         ## STATISTICS
