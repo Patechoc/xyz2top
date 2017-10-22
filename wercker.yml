@@ -1,30 +1,15 @@
-box: wercker/python
-# Build definition
+box: python:2.7
+
 build:
   # The steps that will be executed on build
   steps:
     # A step that sets up the python virtual environment
     - virtualenv:
         name: setup virtual environment
-        install_wheel: true # Enable wheel to speed up builds (experimental)
-
-    # # Use this virtualenv step for python 3.2
-    # - virtualenv
-    #     name: setup virtual environment
-    #     python_location: /usr/bin/python3.2
-
-    - script:
-        name: installing the package and its dependencies
-        code: |
-          pip install --upgrade pip
-          pip install pytest
-          pip install -r requirements-dev.txt
-          python setup.py install
-          git submodule init
-          git submodule update
+        install_wheel: true
 
     # A step that executes `pip install` command.
-    # - pip-install
+    - pip-install
 
     # # This pip-install clears the local wheel cache
     # - pip-install:
@@ -33,36 +18,14 @@ build:
     # A custom script step, name value is used in the UI
     # and the code value contains the command that get executed
     - script:
-        name: define environment variables
-        code: |
-          xyzPATH=$(pwd)
-          ls ${xyzPATH}
-          echo "Initiating Python path to: $xyzPATH"
-          if [ ! -z "$PYTHONPATH" -a "$PYTHONPATH" != " " ]; then PYTHONPATH=$PYTHONPATH:${xyzPATH};else PYTHONPATH=${xyzPATH}; fi
-          PYTHONPATH=$PYTHONPATH:${xyzPATH}/xyz2top/src
-          ls ${xyzPATH}/xyz2top/src
-          PYTHONPATH=$PYTHONPATH:${xyzPATH}/lib
-          ls ${xyzPATH}/lib
-          ls ${xyzPATH}/lib/atomsinmolecule
-          PYTHONPATH=$PYTHONPATH:${xyzPATH}/lib/atomsinmolecule
-          ls ${xyzPATH}/lib/atomsinmolecule
-          export PYTHONPATH
-          echo "PYTHONPATH: $PYTHONPATH"
-
-    - script:
-        name: versions
+        name: installing the package and its dependencies
         code: |
           echo "python version $(python --version) running"
           echo "pip version $(pip --version) running"
-          echo "PyTest version $(py.test --version) running"
+          pip install --upgrade pip
+          pip install pytest
+          pip install -r requirements-dev.txt
+          python setup.py install
+          git submodule init
+          git submodule update
 
-    - script:
-        name: Check the package is importable and run the tests differently
-        code: |
-          pip install -e .
-
-    - script:
-        name: TESTING
-        code: |
-          cd xyz2top/tests
-          py.test -v
